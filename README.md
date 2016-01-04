@@ -5,6 +5,10 @@ This project use [nodeJS](https://nodejs.org/en/) and [npm](https://www.npmjs.co
 
 Of course this project use many packages :
 
-- [irc](https://www.npmjs.com/package/irc)
 - [express](https://www.npmjs.com/package/express)
-- [forever](https://www.npmjs.com/package/forever)
+- [forever](https://www.npmjs.com/package/forever)  
+
+
+To use it, just launch it with :  
+
+```nodejs /path/to/project/media/js/api.js```
