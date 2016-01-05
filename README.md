@@ -12,4 +12,9 @@ Of course this project use many packages :
 
 To use it, just launch it with :  
 
-```nodejs /path/to/project/media/js/server.js```
+```nodejs /path/to/project/media/js/server.js```  
+
+Or  
+
+
+```node /path/to/project/media/js/server.js```
