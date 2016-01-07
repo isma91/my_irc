@@ -1,0 +1,92 @@
+@font-face {
+	font-family: 'Pacifico';
+	font-style: normal;
+	src: url('../font/Pacifico.ttf');
+}
+#title {
+	text-align: center;
+	margin: auto;
+	font-family: 'Pacifico', cursive;
+	font-size: 2em;
+}
+.mui-panel,
+.title {
+	text-align: center;
+	margin: auto;
+}
+.input-field label,
+.input-field .prefix {
+	color: #808080;
+}
+.input-field input[type=text]:focus + label,
+.input-field input[type=password]:focus + label,
+.input-field .prefix.active {
+	color: #000000;
+}
+.input-field input[type=text]:focus,
+.input-field input[type=password]:focus {
+	border-bottom: 1px solid #000000;
+	box-shadow: 0 1px 0 0 #000000;
+}
+.input-field input[type=text].valid,
+.input-field input[type=password].valid {
+	border-bottom: 1px solid #008000;
+	box-shadow: 0 1px 0 0 #008000;
+}
+.input-field input[type=text].invalid,
+.input-field input[type=password].invalid {
+	border-bottom: 1px solid #FF0000;
+	box-shadow: 0 1px 0 0 #FF0000;
+}
+.mui-btn--raised:hover,
+#logout:hover,
+#connection:hover {
+	background-color: #D3D3D3;
+	color: black;
+}
+.mui-btn--raised:focus,
+#logout:focus,
+#connection:focus {
+	outline: none;
+	background-color: #808080;
+	color: black;
+}
+.alert-success {
+	width: 100%;
+	margin: auto;
+	text-align: center;
+	background-color: green;
+}
+.alert-failed {
+	width: 100%;
+	margin: auto;
+	text-align: center;
+	background-color: red;
+}
+.incomplete {
+	color: red;
+}
+.mui-appbar {
+	background-color: #A9A9A9;
+}
+#logout {
+	float: right;
+	text-decoration: none;
+	color: white;
+}
+[type="checkbox"].filled-in:checked+label:after {
+	background-color: #000000;
+	border: 2px solid #000000;
+}
+#connection:disabled {
+	background-color: #000000;
+}
+.users {
+	text-align: center;
+	width: 100%;
+}
+#channelName,
+#username,
+#numUsers {
+	color: #000000;
+}
