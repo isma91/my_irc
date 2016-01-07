@@ -45,9 +45,8 @@ $(document).ready(function () {
   socket.on('user connection', function (data) {
     if (data.error === null) {
       $("#username").html(data.data.nickname);
-      $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users');
+      $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
       socket.emit('all channel');
-      $("#theBody").html('');
     } else {
       Materialize.toast('<p class="alert-failed">' + data.error + '<p>', 2000, 'rounded alert-failed');
     }
@@ -78,15 +77,19 @@ $(document).ready(function () {
   socket.on('new user', function (data) {
     if ($("#username").html() !== "") {
       Materialize.toast('<p class="alert-success">New user connected<p>', 1000, 'rounded alert-success');
-      console.log('new user');
-      console.log(data);
-      $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users');
+      if (data.data.channel === $('#channelName').html()) {
+        console.log(data.data.nickname + ' c"est connecter dans le channel ' + data.data.channel);
+      }
+      $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
       socket.emit('all channel');
     }
   });
   socket.on('get channel', function (data) {
     if ($("#username").html() !== "") {
+      console.log('get channel');
       $("#usernameChannelName").html('You are in the channel <span id="channelName">' + data.data.channelName + '</span>');
+      $("#theBody").html('<div class="mui-panel" id="thePanel"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div><div class="mui-panel" id="messageSender"><div class="row"><form class="col s12" action="" method="POST"><div class="row"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label></div></div></form></div></div></div>');
+      $('textarea#message').characterCounter();
     }
   });
 });
