@@ -109,5 +109,11 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	color: #000000;
 }
 #thePanel {
-	height: 100%;
+	height: 100vh;
+	position: relative;
+}
+#messageSender {
+	position: absolute;
+	bottom: 0;
+	width: 95%;
 }
