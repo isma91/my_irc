@@ -3,6 +3,11 @@
 	font-style: normal;
 	src: url('../font/Pacifico.ttf');
 }
+html,body {
+    height:100%;
+    margin: 0px;
+    padding: 0px;
+}
 #title {
 	text-align: center;
 	margin: auto;
@@ -14,27 +19,40 @@
 	text-align: center;
 	margin: auto;
 }
+textarea.materialize-textarea:focus:not([readonly]) {
+	border-bottom: 1px solid #000000;
+	box-shadow: 0 1px 0 0 #000000;
+}
+textarea.materialize-textarea:focus:not([readonly]) + label {
+	color: #000000;
+}
 .input-field label,
-.input-field .prefix {
+.input-field .prefix,
+.materialize-textarea label,
+.materialize-textarea .prefix {
 	color: #808080;
 }
 .input-field input[type=text]:focus + label,
 .input-field input[type=password]:focus + label,
+.materialize-textarea:focus + label,
 .input-field .prefix.active {
 	color: #000000;
 }
 .input-field input[type=text]:focus,
-.input-field input[type=password]:focus {
+.input-field input[type=password]:focus,
+.materialize-textarea:focus {
 	border-bottom: 1px solid #000000;
 	box-shadow: 0 1px 0 0 #000000;
 }
 .input-field input[type=text].valid,
-.input-field input[type=password].valid {
+.input-field input[type=password].valid,
+.materialize-textarea.valid {
 	border-bottom: 1px solid #008000;
 	box-shadow: 0 1px 0 0 #008000;
 }
 .input-field input[type=text].invalid,
-.input-field input[type=password].invalid {
+.input-field input[type=password].invalid,
+.input-field textarea.invalid {
 	border-bottom: 1px solid #FF0000;
 	box-shadow: 0 1px 0 0 #FF0000;
 }
@@ -89,4 +107,7 @@
 #username,
 #numUsers {
 	color: #000000;
+}
+#thePanel {
+	height: 100%;
 }
