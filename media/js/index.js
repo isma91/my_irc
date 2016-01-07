@@ -88,8 +88,16 @@ $(document).ready(function () {
     if ($("#username").html() !== "") {
       console.log('get channel');
       $("#usernameChannelName").html('You are in the channel <span id="channelName">' + data.data.channelName + '</span>');
-      $("#theBody").html('<div class="mui-panel" id="thePanel"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div><div class="mui-panel" id="messageSender"><form action="" method="POST"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label></div></form></div></div>');
+      $("#theBody").html('<div class="mui-panel" id="thePanel"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div><div class="mui-panel" id="messageSender"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div>');
       $('textarea#message').characterCounter();
+      $("#message").on('change paste keyup', function () {
+        if ($.trim($(this).val()) === "") {
+          $("#sendMessage").attr('disabled', "true");
+        } else {
+          $("#sendMessage").removeAttr('disabled');
+        }
+      });
+      $("#sendMessage").click(function () {});
     }
   });
 });
