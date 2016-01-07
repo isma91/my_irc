@@ -58,13 +58,15 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 }
 .mui-btn--raised:hover,
 #logout:hover,
-#connection:hover {
+#connection:hover,
+.btn:hover {
 	background-color: #D3D3D3;
 	color: black;
 }
 .mui-btn--raised:focus,
 #logout:focus,
-#connection:focus {
+#connection:focus,
+.btn:focus {
 	outline: none;
 	background-color: #808080;
 	color: black;
@@ -96,8 +98,10 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	background-color: #000000;
 	border: 2px solid #000000;
 }
-#connection:disabled {
-	background-color: #000000;
+#connection:disabled,
+#sendMessage:disabled {
+	background-color: #000000 !important;
+	color: #000000 !important;
 }
 .users {
 	text-align: center;
