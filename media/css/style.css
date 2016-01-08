@@ -99,7 +99,8 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	border: 2px solid #000000;
 }
 #connection:disabled,
-#sendMessage:disabled {
+#sendMessage:disabled,
+#sendPersonnalMessage:disabled {
 	background-color: #000000 !important;
 	color: #000000 !important;
 }
@@ -112,12 +113,29 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 #numUsers {
 	color: #000000;
 }
-#thePanel {
+#thePanel,
+#thePersonnalPanel {
 	height: 100vh;
 	position: relative;
+	width: 45%;
+	float: left;
 }
-#messageSender {
+#messageSender,
+#personnalMessageSender {
 	position: absolute;
 	bottom: 0;
 	width: 95%;
+}
+.messageEvent {
+	font-style: italic;
+	color: #FF7500;
+}
+.usernameEvent {
+	color: #FF0000;
+}
+.chatNickname {
+	color: #808080;
+}
+.chatMessage {
+	color: #000000;
 }
