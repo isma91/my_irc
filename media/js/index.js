@@ -78,6 +78,7 @@ $(document).ready(function () {
     if ($("#username").html() !== "") {
       Materialize.toast('<p class="alert-success">New user connected<p>', 1000, 'rounded alert-success');
       if (data.data.channel === $('#channelName').html()) {
+        $("#allMessage").append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>')
         console.log(data.data.nickname + ' c"est connecter dans le channel ' + data.data.channel);
       }
       $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
@@ -86,9 +87,8 @@ $(document).ready(function () {
   });
   socket.on('get channel', function (data) {
     if ($("#username").html() !== "") {
-      console.log('get channel');
       $("#usernameChannelName").html('You are in the channel <span id="channelName">' + data.data.channelName + '</span>');
-      $("#theBody").html('<div class="mui-panel" id="thePanel"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div><div class="mui-panel" id="messageSender"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div>');
+      $("#theBody").html('<div class="mui-panel" id="thePanel"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div><div id="allMessage"></div><div class="mui-panel" id="messageSender"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div><div class="mui-panel" id="thePersonnalPanel"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div><div class="mui-panel" id="personnalMessageSender"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="personnalMessage" id="personnalMessage" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="personnalMessage">Personnal message</label><button class="btn waves-effect waves-light btn-flat" id="sendPersonnalMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div>');
       $('textarea#message').characterCounter();
       $("#message").on('change paste keyup', function () {
         if ($.trim($(this).val()) === "") {
@@ -97,7 +97,24 @@ $(document).ready(function () {
           $("#sendMessage").removeAttr('disabled');
         }
       });
-      $("#sendMessage").click(function () {});
+      $("#personnalMessage").on('change paste keyup', function () {
+        if ($.trim($(this).val()) === "") {
+          $("#sendPersonnalMessage").attr('disabled', "true");
+        } else {
+          $("#sendPersonnalMessage").removeAttr('disabled');
+        }
+      });
+      $("#sendMessage").click(function () {
+        socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: $('#message').val()});
+        $("#message").val('');
+      });
+    }
+  });
+  socket.on('receiveMessage', function (data) {
+    if ($("#username").html() !== "") {
+      if ($('#channelName').html() === data.data.channel) {
+        $('#allMessage').append('<div><span class="chatNickname">' + data.data.nickname + '</span> : <span class="chatMessage">' + data.data.message + '</span></div><div class="mui-divider"></div>');
+      }
     }
   });
 });

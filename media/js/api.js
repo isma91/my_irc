@@ -5,7 +5,7 @@
    socket.broadcast.emit() <= pour tout le monde sauf current
    socket.emit <= pour current
 */
-var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c;
+var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c, d;
 channels = [];
 arrayUser = [];
 arrayChanel = [{channelName: "default", users: []},{channelName: "studentFirstYear", users: []},{channelName: "studentSecondYear", users: []},{channelName: "pangolin", users: []},{channelName: "game", users: []},{channelName: "job", users: []},{channelName: "campus", users: []}];
@@ -26,6 +26,16 @@ function userExist (nickname) {
     "use strict";
     for (a = 0; a < arrayUser.length; a = a + 1) {
         if (arrayUser[a].nickname === nickname) {
+            return true;
+            break;
+        }
+    }
+    return false;
+}
+function channelExist (channel) {
+    "use strict";
+    for (d = 0; d < arrayChanel.length; d = d + 1) {
+        if (arrayChanel[d].channelName === channel) {
             return true;
             break;
         }
@@ -88,6 +98,17 @@ io.on('connection', function (socket) {
     });
     socket.on('all channel', function () {
         socket.emit('all channel', {error: null, data: arrayChanel});
+    });
+    socket.on('sendMessage', function (data) {
+        if (userExist(data.nickname) === true) {
+            if (channelExist(data.channel) === true) {
+                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message}})
+            } else{
+                socket.emit('receiveMessage', {error: 'channel not found !!', data: null});
+            }
+        } else {
+            socket.emit('receiveMessage', {error: 'nickname not found !!', data: null});
+        }
     });
     socket.on('disconnect', function (){
         console.log('a user is disconnected');
