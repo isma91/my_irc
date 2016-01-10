@@ -115,20 +115,30 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 }
 #thePanel,
 #thePersonnalPanel {
-	height: 100vh;
+	position: absolute;	
+	min-height: 60vh;
+	max-height: 60vh;
 	position: relative;
-	width: 45%;
-	float: left;
 }
-#messageSender,
-#personnalMessageSender {
-	position: absolute;
+#allMessage {
+	min-height: 45vh;
+	max-height: 45vh;
+}
+#channelsButton {
+	min-height: 15vh;
+	max-height: 15vh;
+}
+#senders {
+	float: left;
 	bottom: 0;
-	width: 95%;
 }
 .messageEvent {
 	font-style: italic;
 	color: #FF7500;
+}
+.messageError {
+	font-style: italic;
+	color: #FF0000;
 }
 .usernameEvent {
 	color: #FF0000;
@@ -138,4 +148,13 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 }
 .chatMessage {
 	color: #000000;
+}
+.shortcutName {
+	color: #FF7500;
+}
+.shortcutPattern {
+	color: #00FF00;
+}
+.shortcutDescription {
+	color: #000FFF;
 }
