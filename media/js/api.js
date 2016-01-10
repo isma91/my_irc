@@ -5,10 +5,11 @@
    socket.broadcast.emit() <= pour tout le monde sauf current
    socket.emit <= pour current
 */
-var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c, d;
+var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c, d, arrayShortcuts, e, f;
 channels = [];
 arrayUser = [];
 arrayChanel = [{channelName: "default", users: []},{channelName: "studentFirstYear", users: []},{channelName: "studentSecondYear", users: []},{channelName: "pangolin", users: []},{channelName: "game", users: []},{channelName: "job", users: []},{channelName: "campus", users: []}];
+arrayShortcuts = [{name: "/allShortcuts", pattern: "/allShortcuts", description: "display all keyboard shortcuts"}, {name: "/msg", pattern: "/msg [nickname]", description: "send personnal message to [nickname]"}, {name: "/nick", pattern: "/nick [nickname]", description: "change your nickname to [nickname]"}, {name: "/list", pattern: "/list [channelName]", description: "list all channel, displays only channels containing [channelName] if it is specified"}, {name: "/join", pattern: "/join [channelName]", description: "leave your current channel and join channel [channelName]"}, {name: "/part", pattern: "/part", description: "leave your current channel, you can't send message to people when you leave your channel but you can still send personnal message"}, {name: "/users", pattern: "/users", description: "list all users who are in your current channel"}, {name: "/allUsers", pattern: "/allUsers", description: "list all users who are in all channel"}];
 http = require('http');
 path = require('path');
 express = require('express');
@@ -21,7 +22,6 @@ app.get('/', function (requete, response) {
     "use strict";
     response.sendFile(path.resolve(__dirname + '/../../views/index.html'));
 });
-
 function userExist (nickname) {
     "use strict";
     for (a = 0; a < arrayUser.length; a = a + 1) {
@@ -41,6 +41,53 @@ function channelExist (channel) {
         }
     }
     return false;
+}
+function nicknameAddInChannel (nickname, channel) {
+    "use strict";
+    var nicknameInChannel;
+    nicknameInChannel = "false";
+    if (userExist(nickname) === true) {
+        if (channelExist(channel) === true) {
+            for (e = 0; e < arrayChanel.length; e = e + 1) {
+                if (arrayChanel[e].channelName === channel) {
+                    for (f = 0; f < arrayChanel[e].users.length; f = f + 1) {
+                        if (arrayChanel[e].users[f] === nickname) {
+                            nicknameInChannel = "true";
+                            break;
+                        }
+                    }
+                    if (nicknameInChannel === "true") {
+                        return {error: null, nickname: nickname, channel: channel};
+                    } else {
+                        arrayChanel[e].users.push(nickname);
+                        return {error: null, nickname: nickname, channel: channel};
+                    }
+                }
+            }
+        } else {
+            return {error: 'channel not found !!', data: null, nickname: nickname};
+        }
+    } else {
+        return {error: 'nickname not found !!', data: null, nickname: nickname};
+    }
+}
+function changeNickname (oldNickname, newNickname) {
+    "use strict";
+    var i, j, k;
+    for (i = 0; i < arrayUser.length; i = i + 1) {
+        if (arrayUser[i].nickname === oldNickname) {
+            arrayUser[i].nickname = newNickname;
+            break;
+        }
+    }
+    for (j = 0; j < arrayChanel.length; j = j + 1) {
+        for (k = 0; k < arrayChanel[j].users.length; k = k + 1) {
+            if (arrayChanel[j].users[k] === oldNickname) {
+                arrayChanel[j].users[k] = newNickname;
+                break;
+            }
+        }
+    }
 }
 io.on('connection', function (socket) {
     "use strict";
@@ -71,6 +118,10 @@ io.on('connection', function (socket) {
                 }
             }
         }
+        if (channelMatch === false) {
+            dataUserConnection.channel = "default";
+            channelMatch = true;
+        }
         if (userDuplicate === true) {
             reponse = {error: "nickname already taken", data: null};
         } else if (channelMatch === true) {
@@ -95,6 +146,7 @@ io.on('connection', function (socket) {
             reponse = {error: "channel not found, you go in channel default", data: null};
         }
         socket.emit('user connection', reponse);
+        reponse = "";
     });
     socket.on('all channel', function () {
         socket.emit('all channel', {error: null, data: arrayChanel});
@@ -109,6 +161,26 @@ io.on('connection', function (socket) {
         } else {
             socket.emit('receiveMessage', {error: 'nickname not found !!', data: null});
         }
+    });
+    socket.on('allShortcuts', function (data) {
+        if (userExist(data.nickname) === true) {
+            socket.emit('allShortcuts', {error: null, data: arrayShortcuts, trigger: data.trigger});
+        } else {
+            socket.emit('allShortcuts', {error: 'nickname not found !!', data: null});
+        }
+    });
+    socket.on('goInChannel', function (data) {
+        io.sockets.emit('goInChannel', (nicknameAddInChannel(data.nickname, data.channel)));
+    });
+    socket.on('change nickname', function (data) {
+        reponse = "";
+        if (userExist(data.newNickname) === false) {
+            changeNickname(data.oldNickname, data.newNickname);
+            reponse = {error: null, data: {allChannel: arrayChanel, oldNickname: data.oldNickname, newNickname: data.newNickname}};
+        } else {
+            reponse = {error: 'nickname already taken !!', data: null};
+        }
+        io.sockets.emit('change nickname', reponse);
     });
     socket.on('disconnect', function (){
         console.log('a user is disconnected');
