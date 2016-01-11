@@ -89,6 +89,24 @@ function changeNickname (oldNickname, newNickname) {
         }
     }
 }
+function listChannel (channelName) {
+    "use strict";
+    var listChannel, i, regex, j;
+    listChannel = [];
+    if (channelName === "") {
+        for (i = 0; i < arrayChanel.length; i = i + 1) {
+            listChannel.push(arrayChanel[i].channelName);
+        }
+    } else {
+        regex = new RegExp(channelName, 'i');
+        for (j = 0; j < arrayChanel.length; j = j + 1) {
+            if (arrayChanel[j].channelName.match(regex)) {
+                listChannel.push(arrayChanel[j].channelName);
+            }
+        }
+    }
+    return {listChannel: listChannel, channelName: channelName};
+}
 io.on('connection', function (socket) {
     "use strict";
     console.log('a user is connected');
@@ -181,6 +199,9 @@ io.on('connection', function (socket) {
             reponse = {error: 'nickname already taken !!', data: null};
         }
         io.sockets.emit('change nickname', reponse);
+    });
+    socket.on('listChannel', function (data) {
+        socket.emit('listChannel', {data: listChannel(data.channelName)});
     });
     socket.on('disconnect', function (){
         console.log('a user is disconnected');

@@ -2,7 +2,7 @@
 /*jslint devel : true*/
 /*global $, document, this, Materialize*/
 $(document).ready(function () {
-  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i;
+  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i, listChannels;
   countMessage = 0;
   arrayKeyboardShortcuts = [];
   listChannelsButton = [];
@@ -175,7 +175,7 @@ $(document).ready(function () {
           break;
           case "/list":
           keyboardShortcuts = true;
-          //list channel
+          socket.emit('listChannel', {channelName: $.trim($.trim($("#message").val()).substr(5))});
           break;
           case "/join":
           keyboardShortcuts = true;
@@ -238,13 +238,19 @@ $(document).ready(function () {
       if (data.error === null) {
         if (data.data.oldNickname === $('#username').html()) {
           $('#username').html(data.data.newNickname);
-          $('#allMessage').append('<div class="messageEvent">You change your nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div>');
+          $('#allMessage').append('<div class="messageEvent">You change your nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
+          $('#allMessage').niceScroll({cursorwidth: '10px'});
+          $('#allMessage').getNiceScroll().resize();
+          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
         } else {
           $.each(data.data.allChannel, function (index, channel) {
             if (channel.channelName === $('#channelName').html()) {
               $.each(channel.users, function (num, user) {
                 if (user === data.data.newNickname) {
-                  $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div>');
+                  $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
+                  $('#allMessage').niceScroll({cursorwidth: '10px'});
+                  $('#allMessage').getNiceScroll().resize();
+                  $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
                   return;//break fait planter jquery car illegal statement dans un $.each();
                 }
               });
@@ -252,6 +258,42 @@ $(document).ready(function () {
           });
         }
         socket.emit("all channel");
+      }
+    }
+  });
+  socket.on('listChannel', function (data) {
+    listChannels = '';
+    if ($('#username').html() !== "") {
+      if (data.data.channelName === "") {
+        listChannels = '<div class="messageEvent">Here all channels :<br>';
+        $.each(data.data.listChannel, function (index, channel) {
+          listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
+        });
+        listChannels = listChannels + '</div><div class="mui-divider"></div>';
+        $('#allMessage').append(listChannels);
+        listChannels = '';
+        $('#allMessage').niceScroll({cursorwidth: '10px'});
+        $('#allMessage').getNiceScroll().resize();
+        $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+      } else {
+        if (data.data.listChannel.length === 0) {
+          $('#allMessage').append('<div class="messageEvent">No channel found with <span class="usernameEvent">' + data.data.channelName + '</span> :(</div><div class="mui-divider"></div>');
+          $('#allMessage').niceScroll({cursorwidth: '10px'});
+          $('#allMessage').getNiceScroll().resize();
+          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+        } else {
+          listChannels = '';
+          listChannels = '<div class="messageEvent">Here are the channels that contain <span class="usernameEvent">' + data.data.channelName + '</span> :<br>';
+          $.each(data.data.listChannel, function (index, channel) {
+            listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
+          });
+          listChannels = listChannels + '</div><div class="mui-divider"></div>';
+          $('#allMessage').append(listChannels);
+          listChannels = '';
+          $('#allMessage').niceScroll({cursorwidth: '10px'});
+          $('#allMessage').getNiceScroll().resize();
+          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+        }
       }
     }
   });
