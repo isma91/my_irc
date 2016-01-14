@@ -9,7 +9,7 @@ var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplica
 channels = [];
 arrayUser = [];
 arrayChanel = [{channelName: "default", users: []},{channelName: "studentFirstYear", users: []},{channelName: "studentSecondYear", users: []},{channelName: "pangolin", users: []},{channelName: "game", users: []},{channelName: "job", users: []},{channelName: "campus", users: []}];
-arrayShortcuts = [{name: "/allShortcuts", pattern: "/allShortcuts", description: "display all keyboard shortcuts"}, {name: "/msg", pattern: "/msg [nickname]", description: "send personnal message to [nickname]"}, {name: "/nick", pattern: "/nick [nickname]", description: "change your nickname to [nickname]"}, {name: "/list", pattern: "/list [channelName]", description: "list all channel, displays only channels containing [channelName] if it is specified"}, {name: "/join", pattern: "/join [channelName]", description: "leave your current channel and join channel [channelName]"}, {name: "/part", pattern: "/part", description: "leave your current channel, you can't send message to people when you leave your channel but you can still send personnal message"}, {name: "/users", pattern: "/users", description: "list all users who are in your current channel"}, {name: "/allUsers", pattern: "/allUsers", description: "list all users who are in all channel"}];
+arrayShortcuts = [{name: "/allShortcuts", pattern: "/allShortcuts", description: "display all keyboard shortcuts"}, {name: "/msg", pattern: "/msg [nickname]:[message]", description: "send personnal message to [nickname], all user in the channel if nickname is empty"}, {name: "/nick", pattern: "/nick [nickname]", description: "change your nickname to [nickname]"}, {name: "/list", pattern: "/list [channelName]", description: "list all channel, displays only channels containing [channelName] if it is specified"}, {name: "/join", pattern: "/join [channelName]", description: "leave your current channel and join channel [channelName]"}, {name: "/part", pattern: "/part", description: "leave your current channel, you can't send message to people when you leave your channel but you can still send personnal message"}, {name: "/users", pattern: "/users", description: "list all users who are in your current channel"}, {name: "/allUsers", pattern: "/allUsers", description: "list all users who are in all channel"}];
 http = require('http');
 path = require('path');
 express = require('express');
@@ -65,10 +65,10 @@ function nicknameAddInChannel (nickname, channel) {
                 }
             }
         } else {
-            return {error: 'channel not found !!', data: null, nickname: nickname};
+            return {error: 'channel not found !!', data: channel, nickname: nickname};
         }
     } else {
-        return {error: 'nickname not found !!', data: null, nickname: nickname};
+        return {error: 'nickname not found !!', data: channel, nickname: nickname};
     }
 }
 function changeNickname (oldNickname, newNickname) {
@@ -188,7 +188,7 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('goInChannel', function (data) {
-        io.sockets.emit('goInChannel', (nicknameAddInChannel(data.nickname, data.channel)));
+        io.sockets.emit('goInChannel', nicknameAddInChannel(data.nickname, data.channel));
     });
     socket.on('change nickname', function (data) {
         reponse = "";
