@@ -120,7 +120,8 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	max-height: 60vh;
 	position: relative;
 }
-#allMessage {
+#allMessage,
+#allPersonnalMessage {
 	min-height: 45vh;
 	max-height: 45vh;
 }
@@ -135,10 +136,6 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 .messageEvent {
 	font-style: italic;
 	color: #FF7500;
-}
-.messageError {
-	font-style: italic;
-	color: #FF0000;
 }
 .usernameEvent {
 	color: #FF0000;
