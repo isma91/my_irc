@@ -17,4 +17,7 @@ To use it, just launch it with :
 Or  
 
 
-```node /path/to/project/media/js/server.js```
+```node /path/to/project/media/js/server.js```  
+
+After that you can go to your favorite web navigator and write :  
+```http://localhost:1234```
