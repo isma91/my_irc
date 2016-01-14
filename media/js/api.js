@@ -9,7 +9,7 @@ var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplica
 channels = [];
 arrayUser = [];
 arrayChanel = [{channelName: "default", users: []},{channelName: "studentFirstYear", users: []},{channelName: "studentSecondYear", users: []},{channelName: "pangolin", users: []},{channelName: "game", users: []},{channelName: "job", users: []},{channelName: "campus", users: []}];
-arrayShortcuts = [{name: "/allShortcuts", pattern: "/allShortcuts", description: "display all keyboard shortcuts"}, {name: "/msg", pattern: "/msg [nickname]:[message]", description: "send personnal message to [nickname], all user in the channel if nickname is empty"}, {name: "/nick", pattern: "/nick [nickname]", description: "change your nickname to [nickname]"}, {name: "/list", pattern: "/list [channelName]", description: "list all channel, displays only channels containing [channelName] if it is specified"}, {name: "/join", pattern: "/join [channelName]", description: "leave your current channel and join channel [channelName]"}, {name: "/part", pattern: "/part", description: "leave your current channel, you can't send message to people when you leave your channel but you can still send personnal message"}, {name: "/users", pattern: "/users", description: "list all users who are in your current channel"}, {name: "/allUsers", pattern: "/allUsers", description: "list all users who are in all channel"}];
+arrayShortcuts = [{name: "/allShortcuts", pattern: "/allShortcuts", description: "display all keyboard shortcuts"}, {name: "/msg", pattern: "/msg [nickname]:[message]", description: "send personnal message to [nickname], all user in the channel if nickname is empty"}, {name: "/nick", pattern: "/nick [nickname]", description: "change your nickname to [nickname]"}, {name: "/list", pattern: "/list [channelName]", description: "list all channel, displays only channels containing [channelName] if it is specified"}, {name: "/join", pattern: "/join [channelName]", description: "leave your current channel and join channel [channelName]"}, {name: "/part", pattern: "/part", description: "leave your current channel, you can't send message to people when you leave all your channel but you can still send personnal message"}, {name: "/users", pattern: "/users", description: "list all users who are in your current channel"}, {name: "/allUsers", pattern: "/allUsers", description: "list all users who are in all channel"}];
 http = require('http');
 path = require('path');
 express = require('express');
@@ -107,6 +107,49 @@ function listChannel (channelName) {
     }
     return {listChannel: listChannel, channelName: channelName};
 }
+function getNicknameCurrentChannel (channelName) {
+    "user strict";
+    var i;
+    if (channelExist(channelName) === true) {
+        for (i = 0; i < arrayChanel.length; i = i + 1) {
+            if (arrayChanel[i].channelName === channelName) {
+                return {error: null, data: arrayChanel[i].users};
+                break;
+            }
+        }
+    } else {
+        return {error: "channel not found !!", data: null};
+    }
+}
+function getNicknameAllChannel () {
+    "user strict";
+    var i, userList, j;
+    userList = [];
+    for (i = 0; i < arrayChanel.length; i = i + 1) {
+        for (j = 0; j < arrayChanel[i].users.length; j = j + 1) {
+            userList.push(arrayChanel[i].users[j]);
+        }
+    }
+}
+function leaveChannel (nickname, channelName) {
+    "use strict";
+    var i, j;
+    if (channelExist(channelName) === true) {
+        for (i = 0; i < arrayChanel.length; i = i + 1) {
+            if (arrayChanel[i].channelName === channelName) {
+                for (j = 0; j < arrayChanel[i].users.length; j = j + 1) {
+                    if (arrayChanel[i].users[j] === nickname) {
+                        arrayChanel[i].users.splice(j, 1);
+                        return {error: null, data: {nickname: nickname, channel: channelName}};
+                        break;
+                    }
+                }
+            }
+        }
+    } else {
+        return {error: "channel not found !!", data: null};
+    }
+}
 io.on('connection', function (socket) {
     "use strict";
     console.log('a user is connected');
@@ -173,6 +216,8 @@ io.on('connection', function (socket) {
         if (userExist(data.nickname) === true) {
             if (channelExist(data.channel) === true) {
                 io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message}})
+            } else if (data.channel === null) {
+                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message}})
             } else{
                 socket.emit('receiveMessage', {error: 'channel not found !!', data: null});
             }
@@ -202,6 +247,27 @@ io.on('connection', function (socket) {
     });
     socket.on('listChannel', function (data) {
         socket.emit('listChannel', {data: listChannel(data.channelName)});
+    });
+    socket.on('getUserCurrentChannel', function (data) {
+        if (userExist(data.nickname) == true) {
+            socket.emit('getUserCurrentChannel', getNicknameCurrentChannel(data.channel));
+        } else {
+            socket.emit('getUserCurrentChannel', {error: 'nickname not found !!', data: null});
+        }
+    });
+    socket.on('getUserAllChannel', function (data) {
+        if (userExist(data.nickname) == true) {
+            socket.emit('getUserAllChannel', getNicknameAllChannel());
+        } else {
+            socket.emit('getUserAllChannel', {error: 'nickname not found !!', data: null});
+        }
+    });
+    socket.on('leaveChannel', function (data) {
+        if (userExist(data.nickname) == true) {
+            io.sockets.emit('leaveChannel', leaveChannel(data.nickname, data.channel));
+        } else {
+            io.sockets.emit('leaveChannel', {error: 'nickname not found !!', data: null});
+        }
     });
     socket.on('disconnect', function (){
         console.log('a user is disconnected');
