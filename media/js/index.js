@@ -151,7 +151,7 @@ $(document).ready(function () {
   socket.on('get channel', function (data) {
     if ($("#username").html() !== "") {
       $("#usernameChannelName").html('You are currently in the channel <span id="channelName">' + data.data.channelName + '</span>');
-      $("#theBody").html('<div class="row"><div class="mui-panel col s6" id="thePanel"><div id="allMessage"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"><li><button class="mui-btn mui-btn--raised channelButton">' + data.data.channelName + '</button></li></ul></div></div>');
+      $("#theBody").html('<div class="row"><div class="mui-panel col s6" id="thePanel"><div id="allMessage"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div></div></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"><li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li></ul></div></div>');
       checkDuplicateChannel(data.data.channelName);
       $("#allMessage").niceScroll({cursorwidth: '10px'});
       $('#channelsButton').niceScroll({cursorwidth: '10px'});
@@ -165,6 +165,7 @@ $(document).ready(function () {
       });
       $("#sendMessage").click(function () {
         keyboardShortcuts = false;
+        console.log(arrayShortcut);
         //verifier que le shortcut est dans arrayShortcut
         if ($.trim($('#message').val()).substr(0, 4) === "/msg") {
           keyboardShortcuts = true;
@@ -173,7 +174,7 @@ $(document).ready(function () {
               arrayMsg = $.trim($.trim($("#message").val()).substr(5)).split(':');
               to = arrayMsg[0].trim();
               arrayMsg.splice(0, 1);
-              socket.emit('sendMessage', {nickname: $('#username').html(), to: to, channel: $('#channelName').html(), message: arrayMsg.join(" ")});
+              socket.emit('sendMessage', {nickname: $('#username').html(), to: to, channel: null, message: arrayMsg.join(" ")});
               arrayMsg = [];
               to = "";
             } else {
@@ -206,12 +207,16 @@ $(document).ready(function () {
           break;
           case "/part":
           keyboardShortcuts = true;
-          //leave channel
+          socket.emit('leaveChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
           break;
           //$('#allMessage').append('<div class="messageEvent">Unknown keyboard shortcuts !! To have the full list of keyboard shortcuts, tap /allShortcuts !!</div><div class="mui-divider"></div>');
         }
         if ($.trim($("#message").val()).substr(0, 6) === "/users") {
-          console.log('/users mannn');
+          keyboardShortcuts = true;
+          socket.emit('getUserCurrentChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
+        } if ($.trim($("#message").val()).substr(0, 6) === "/allUsers") {
+          keyboardShortcuts = true;
+          socket.emit('getUserAllChannel', {nickname: $('#username').html()});
         } else if ($.trim($("#message").val()).substr(0, 13) === "/allShortcuts") {
           keyboardShortcuts = true;
           socket.emit('allShortcuts', {nickname: $('#username').html(), trigger: "message"});
@@ -225,12 +230,17 @@ $(document).ready(function () {
   });
   socket.on('receiveMessage', function (data) {
     if ($("#username").html() !== "") {
-      if (data.data.to === $('#username').html()) {
-        displayMessage(data.data.nickname, data.data.message, "#allPersonnalMessage", "#allPersonnalMessage")
-      } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
-        displayMessage(data.data.nickname, data.data.message, "#allPersonnalMessage", "#allPersonnalMessage");
-      } else if ($('#channelName').html() === data.data.channel && data.data.to === null)
-        displayMessage(data.data.nickname, data.data.message, "#allMessage", "#allMessage");
+      //if ($('#channelName').html() !== "") {
+        if (data.data.to === $('#username').html()) {
+          displayMessage(data.data.nickname, data.data.message, "#allPersonnalMessage", "#allPersonnalMessage")
+        } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
+          displayMessage(data.data.nickname, data.data.message, "#allPersonnalMessage", "#allPersonnalMessage");
+        } else if (data.data.nickname === $('#username').html() && data.data.to !== null) {
+          displayMessage(data.data.nickname, data.data.message, "#allPersonnalMessage", "#allPersonnalMessage");
+        } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
+          displayMessage(data.data.nickname, data.data.message, "#allMessage", "#allMessage");
+        }
+      //}
     }
   });
   socket.on('allShortcuts', function (data) {
@@ -243,7 +253,7 @@ $(document).ready(function () {
           $('#channelName').html(data.channel);
           $('#allMessage').html('<div id="welcomeChannel">Welcome to the channel ' + data.channel + ' !!</div><div class="mui-divider"></div>');
           if (checkDuplicateChannel(data.channel) === false) {
-            $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton">' + data.channel + '</button></li>');
+            $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.channel + '">' + data.channel + '</button></li>');
             $('#channelsButton').niceScroll({cursorwidth: '10px'});
             $('#channelsButton').getNiceScroll().resize();
             $('#channelsButton').animate({ scrollTop: 1000000 }, "slow");
@@ -328,6 +338,50 @@ $(document).ready(function () {
       }
     }
   });
+  socket.on('getUserCurrentChannel', function (data) {
+    if ($('#username').html() !== "") {
+      if (data.error === null) {
+        listUserCurrentChannel = '';
+        listUserCurrentChannel = listUserCurrentChannel + '<div class="messageEvent">Here are all users in the channel <span class="usernameEvent">' + $("#channelName").html() + '</span> :<br>';
+        $.each(data.data, function (index, nickname) {
+          listUserCurrentChannel = listUserCurrentChannel + '<span class="usernameEvent">' + nickname + '</span><br>';
+        });
+        listUserCurrentChannel = listUserCurrentChannel + '</div><div class="mui-divider"></div>';
+        $('#allMessage').append(listUserCurrentChannel);
+        listUserCurrentChannel = '';
+        $('#allMessage').niceScroll({cursorwidth: '10px'});
+        $('#allMessage').getNiceScroll().resize();
+        $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+      }
+    }
+  });
+  socket.on('leaveChannel', function (data) {
+    if ($('#username').html() !== "") {
+      if (data.error === null) {
+        if (data.data.nickname === $('#username').html()) {
+          if ($('.channelButton_' + data.data.channel).text() === data.data.channel) {
+            $('.channelButton_' + data.data.channel).remove();
+            if ($('.channelButton').length > 0) {
+              $("#channelName").html($('.channelButton')[$('.channelButton').length - 1].innerHTML);
+            } else {
+              $('#channelName').html('');
+              $('#allMessage').append('<div class="messageEvent">ou are in any channel now, you can\'t send message to all user and can\'t leave a channel until you join another channel</div><div class="mui-divider"></div>');
+            }
+          }
+        } else {
+          if (data.data.channel === $('#channelName').html()) {
+            $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> left the channel</div><div class="mui-divider"></div>');
+          }
+        }
+        socket.emit('all channel');
+      }
+    }
+  });
+  /*socket.on('getUserAllChannel', function (data) {
+    if ($('#username').html() !== "") {
+      console.log(data);
+    }
+  });*/
   setInterval(function (){
     Materialize.showStaggeredList('#channelsButton');
   }, 2500);
