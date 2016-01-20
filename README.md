@@ -12,12 +12,12 @@ Of course this project use many packages :
 
 To use it, just launch it with :  
 
-```nodejs /path/to/project/media/js/server.js```  
-
-Or  
-
-
 ```node /path/to/project/media/js/server.js```  
+
+Or, if you have the nodejs legacy package  
+
+
+```nodejs /path/to/project/media/js/server.js```  
 
 After that you can go to your favorite web navigator and write :  
 ```http://localhost:1234```
