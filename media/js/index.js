@@ -2,13 +2,24 @@
 /*jslint devel : true*/
 /*global $, document, this, Materialize*/
 $(document).ready(function () {
-  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i, listChannels, j, arrayMsg, to, emoticon, gifSearch;
+  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i, listChannels, j, arrayMsg, to, emoticon, gifSearch, notification;
   to = "";
   arrayMsg = [];
   countMessage = 0;
   arrayKeyboardShortcuts = [];
   listChannelsButton = [];
   socket = io();
+  $.extend({
+    playSound: function(){
+      return $(
+        '<audio autoplay="autoplay" style="display:none;">'
+          + '<source src="' + arguments[0] + '.mp3" />'
+          + '<source src="' + arguments[0] + '.ogg" />'
+          + '<embed src="' + arguments[0] + '.mp3" hidden="true" autostart="true" loop="false" class="playSound" />'
+        + '</audio>'
+      ).appendTo('body');
+    }
+  });
   //socket = io.connect('http://localhost:1234');
   function displayMessage (nickname, message, to, selectorDisplayMessage, selectorToScroll) {
     "use strict";
@@ -232,7 +243,8 @@ $(document).ready(function () {
   socket.on('get channel', function (data) {
     if ($("#username").html() !== "") {
       $("#usernameChannelName").html('You are currently in the channel <span id="channelName">' + data.data.channelName + '</span>');
-      $("#theBody").html('<div class="row"><div class="mui-panel col s6" id="thePanel"><div id="allMessage"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"><li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li></ul></div></div>');
+      $("#theBody").html('<div class="row"><div class="mui-panel col s6" id="thePanel"><div id="allMessage"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"><li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li></ul></div></div><audio id="notification" preload="auto"><source src="sound/notification.ogg"></source>This browser does not support the HTML5 audio tag.</audio>');
+      notification = $('#notification')[0];
       $('.dropdown-button').dropdown({
         inDuration: 300,
         outDuration: 225,
@@ -331,12 +343,16 @@ $(document).ready(function () {
     if ($("#username").html() !== "") {
       if (data.data.to === $('#username').html()) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+        notification.play();
       } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+        notification.play();
       } else if (data.data.nickname === $('#username').html() && data.data.to !== null) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+        notification.play();
       } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage", "#allMessage");
+        notification.play();
       }
     }
   });
