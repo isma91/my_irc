@@ -145,7 +145,6 @@ $(document).ready(function () {
     });
   }
   socket.on('list channel', function (data) {
-    console.log(data);
     listChannel = '<h3 class="title">List of channels</h3><ul id="listChannel">';
     $.each(data.data, function (index, channel) {
       listChannel = listChannel + '<li>' + channel + '</li>';
