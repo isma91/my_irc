@@ -125,7 +125,7 @@ $(document).ready(function () {
               switch($(this).text()) {
                 case "Current Channel":
                 $('#sendGifModal').closeModal();
-                socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#usernameChannelName').html(), message: '<img class="gifs" src="' + $('#trueGifSend').attr('src') + '" alt="' + $('#trueGifSend').attr('alt') + '" />'});
+                socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: '<img class="gifs" src="' + $('#trueGifSend').attr('src') + '" alt="' + $('#trueGifSend').attr('alt') + '" />'});
                 break;
                 case "Personal Message":
                 $('#sendGifModal').closeModal();
@@ -213,7 +213,7 @@ $(document).ready(function () {
       $('strong', '#sidedrawer').next().hide();
       $('strong', '#sidedrawer').click(function () {
         $(this).next().slideToggle(200);
-        socket.emit('goInChannel', {nickname: $("#username").html(), channel: $(this).attr('id')});
+        socket.emit('goInChannel', {nickname: $("#username").html(), channel: $(this).attr('id'), fromChannel: $('#channelName').html()});
       });
     } else {
       Materialize.toast('<p class="alert-failed">' + data.error + '<p>', 4000, 'rounded alert-failed');
@@ -299,7 +299,7 @@ $(document).ready(function () {
           break;
           case "/join":
           keyboardShortcuts = true;
-          socket.emit('goInChannel', {nickname: $("#username").html(), channel: $.trim($.trim($("#message").val()).substr(5))});
+          socket.emit('goInChannel', {nickname: $("#username").html(), channel: $.trim($.trim($("#message").val()).substr(5)), fromChannel: $('#channelName').html()});
           break;
           case "/part":
           keyboardShortcuts = true;
@@ -309,7 +309,14 @@ $(document).ready(function () {
         if ($.trim($("#message").val()).substr(0, 6) === "/users") {
           keyboardShortcuts = true;
           socket.emit('getUserCurrentChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
-        }else if ($.trim($("#message").val()).substr(0, 13) === "/allShortcuts") {
+        } else if ($.trim($("#message").val()).substr(0, 11) === "/addChannel") {
+          keyboardShortcuts = true;
+          if ($.trim($.trim($("#message").val()).substr(11)) === "") {
+            $('#allMessage').append('<div class="messageEvent">You can\'t add an empty channel !!</div><div class="mui-divider"></div>');
+          } else {
+            socket.emit('addChannel', {nickname: $('#username').html(), channelName: $.trim($.trim($("#message").val()).substr(11)), fromChannel: $('#channelName').html()});
+          }
+        } else if ($.trim($("#message").val()).substr(0, 13) === "/allShortcuts") {
           keyboardShortcuts = true;
           socket.emit('allShortcuts', {nickname: $('#username').html(), trigger: "message"});
         } else if (keyboardShortcuts === false) {
@@ -351,10 +358,12 @@ $(document).ready(function () {
         } else {
           if (data.channel === $('#channelName').html()) {
             $("#allMessage").append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>');
+          } else if (data.fromChannel === $('#channelName').html()) {
+            $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> go to another channel !!</div><div class="mui-divider"></div>');
           }
         }
         $('.channelButton').click(function () {
-          socket.emit('goInChannel', {nickname: $("#username").html(), channel: $(this).text()});
+          socket.emit('goInChannel', {nickname: $("#username").html(), channel: $(this).text(), fromChannel: $('#channelName').html()});
         });
         socket.emit("all channel");
       } else {
@@ -467,7 +476,30 @@ $(document).ready(function () {
       }
     }
   });
+  socket.on('addChannel', function (data) {
+    if ($('#username').html() !== "") {
+      if (data.error === null) {
+        if (data.fromChannel === $('#channelName').html()) {
+          $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> create the channel <span class="usernameEvent">' + data.channelName + '</span></div><div class="mui-divider"></div>');
+          socket.emit('all channel');
+        }
+      }
+    }
+  });
   setInterval(function (){
     Materialize.showStaggeredList('#channelsButton');
   }, 2500);
+  $(window).bind('beforeunload', function (){
+    if ($('#username').html() !== "") {
+      socket.emit('leaveIRC', {nickname: $('#username').html(), channelName: $('#channelName').html()});
+    }
+  });
+  socket.on('leaveIRC', function (data) {
+    if ($('#username').html() !== "") {
+      if ($('#channelName').html() === data.data.channelName) {
+        $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> quit the IRC !!</div><div class="mui-divider"></div>');
+        socket.emit('all channel');
+      }
+    }
+  });
 });
