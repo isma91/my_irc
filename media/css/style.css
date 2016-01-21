@@ -104,6 +104,11 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	background-color: #000000 !important;
 	color: #000000 !important;
 }
+.smileyButton,
+#gifButton {
+	background-color: #FFFFFF !important;
+	color: #000000 !important;
+}
 .users {
 	text-align: center;
 	width: 100%;
@@ -154,4 +159,24 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 }
 .shortcutDescription {
 	color: #000FFF;
+}
+.emoticons a {
+	text-align: center;
+	margin: auto;
+}
+.dropdown-content li>a,
+.dropdown-content li>span {
+	color :#000000;
+}
+.modal-content {
+	min-height: 50vh;
+}
+.gifs {
+	max-width: 40%;
+	min-width: 40%;
+}
+#more {
+	min-width: 100%;
+	max-width: 100%;
+	cursor: pointer;
 }
