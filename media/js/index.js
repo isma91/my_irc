@@ -178,6 +178,15 @@ $(document).ready(function () {
   } else {
     $("#userMood").html('<i class="medium material-icons">mood</i>');
   }
+  $('#notifButton').click(function () {
+    if ($(this).attr('active') === "yes") {
+      $(this).attr('active', 'no');
+      $('#notifIcon').html('volume_off');
+    } else {
+      $(this).attr('active', 'yes');
+      $('#notifIcon').html('volume_up');
+    }
+  });
   $("#remember").change(function () {
     if ($(this).is(':checked') === false) {
       $("#userMood").html('<i class="medium material-icons">mood_bad</i>');
@@ -343,16 +352,24 @@ $(document).ready(function () {
     if ($("#username").html() !== "") {
       if (data.data.to === $('#username').html()) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        notification.play();
+        if ($('#notifButton').attr('active') === "yes") {
+          notification.play();
+        }
       } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        notification.play();
+        if ($('#notifButton').attr('active') === "yes") {
+          notification.play();
+        }
       } else if (data.data.nickname === $('#username').html() && data.data.to !== null) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        notification.play();
+        if ($('#notifButton').attr('active') === "yes") {
+          notification.play();
+        }
       } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
         displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage", "#allMessage");
-        notification.play();
+        if ($('#notifButton').attr('active') === "yes") {
+          notification.play();
+        }
       }
     }
   });
