@@ -57,14 +57,12 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	box-shadow: 0 1px 0 0 #FF0000;
 }
 .mui-btn--raised:hover,
-#logout:hover,
 #connection:hover,
 .btn:hover {
 	background-color: #D3D3D3;
 	color: black;
 }
 .mui-btn--raised:focus,
-#logout:focus,
 #connection:focus,
 .btn:focus {
 	outline: none;
@@ -89,7 +87,16 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 .mui-appbar {
 	background-color: #A9A9A9;
 }
-#logout {
+.btn-large {
+	background-color: #858585;
+}
+.btn-large:hover {
+	background-color: #C6C6C6;
+}
+.btn-large:focus {
+	background-color: #858585;
+}
+#sound {
 	float: right;
 	text-decoration: none;
 	color: white;
