@@ -19,26 +19,37 @@ Or, if you have the nodejs legacy package
 
 ```nodejs /path/to/project/media/js/server.js```  
 
+
 After that you can go to your favorite web navigator and write :  
-```http://localhost:1234```  
+
+	http://localhost:1234
+
 
 If you want to use it to your personnal server, you need to add a virtualhost like this :  
-```LoadModule proxy_module modules/mod_proxy.so
-LoadModule proxy_http_module modules/mod_proxy_http.so
-<VirtualHost *:80>
-        ServerName yourdomain.fr
-        ServerAlias yourdomain.fr
-        <Proxy *>
-                Order deny,allow
-                Allow from all
-        </Proxy>
-        ProxyPass / http://yourdomain.fr:1234/
-        ProxyPassReverse / http://yourdomain.fr:1234/
-        ProxyPreserveHost On
-</VirtualHost>```
-```sudo a2ensite your_conf_file```
-```sudo service apache2 restart```
-```forever start /path/to/api.js```  
+
+
+	LoadModule proxy_module modules/mod_proxy.so
+	LoadModule proxy_http_module modules/mod_proxy_http.so
+	<VirtualHost *:80>
+	        ServerName yourdomain.fr
+	        ServerAlias yourdomain.fr
+	        <Proxy *>
+	                Order deny,allow
+	                Allow from all
+	        </Proxy>
+	        ProxyPass / http://yourdomain.fr:1234/
+	        ProxyPassReverse / http://yourdomain.fr:1234/
+	        ProxyPreserveHost On
+	</VirtualHost>
+
+After that you need to enable the site and restart :  
+
+	sudo a2ensite your_conf_file
+	sudo service apache2 restart
+	forever start /path/to/api.js
+
 
 After that you can go to your favorite web navigator and write :  
-```yourdomain.fr```
+
+	http://yourdomain.fr
+
