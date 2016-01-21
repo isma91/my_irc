@@ -145,6 +145,7 @@ $(document).ready(function () {
     });
   }
   socket.on('list channel', function (data) {
+    console.log(data);
     listChannel = '<h3 class="title">List of channels</h3><ul id="listChannel">';
     $.each(data.data, function (index, channel) {
       listChannel = listChannel + '<li>' + channel + '</li>';
@@ -479,9 +480,11 @@ $(document).ready(function () {
   socket.on('addChannel', function (data) {
     if ($('#username').html() !== "") {
       if (data.error === null) {
-        if (data.fromChannel === $('#channelName').html()) {
-          $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> create the channel <span class="usernameEvent">' + data.channelName + '</span></div><div class="mui-divider"></div>');
-          socket.emit('all channel');
+        socket.emit('all channel');
+        if (data.data.nickname === $('#username').html()) {
+          socket.emit('goInChannel', {nickname: $("#username").html(), channel: data.data.channelName, fromChannel: $('#channelName').html()});
+        } else if (data.data.fromChannel === $('#channelName').html()) {
+          $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> create the channel <span class="usernameEvent">' + data.data.channelName + '</span></div><div class="mui-divider"></div>');
         }
       }
     }
@@ -496,9 +499,9 @@ $(document).ready(function () {
   });
   socket.on('leaveIRC', function (data) {
     if ($('#username').html() !== "") {
+      socket.emit('all channel');
       if ($('#channelName').html() === data.data.channelName) {
         $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> quit the IRC !!</div><div class="mui-divider"></div>');
-        socket.emit('all channel');
       }
     }
   });
