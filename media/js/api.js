@@ -196,6 +196,13 @@ io.on('connection', function (socket) {
     }
     socket.emit("list channel", {error: null, data: channels});
     channels = [];
+    setInterval(function () {
+        for (c = 0; c < arrayChanel.length; c = c + 1) {
+            channels.push(arrayChanel[c].channelName);
+        }
+        socket.emit("list channel", {error: null, data: channels});
+        channels = [];
+    }, 15000);
     socket.on('user connection', function (dataUserConnection) {
         userDuplicate = false;
         channelMatch = false;
