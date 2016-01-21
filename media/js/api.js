@@ -5,7 +5,8 @@
    socket.broadcast.emit() <= pour tout le monde sauf current
    socket.emit <= pour current
 */
-var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c, d, arrayShortcuts, e, f;
+var http, path, express, app, server, io, arrayUser, arrayChanel, i, userDuplicate, channelMatch, j, reponse, k, a, getChannel, b, channels, c, d, arrayShortcuts, e, f, visitorCount;
+visitorCount = 0;
 channels = [];
 arrayUser = [];
 arrayChanel = [{channelName: "default", users: []},{channelName: "studentFirstYear", users: []},{channelName: "studentSecondYear", users: []},{channelName: "pangolin", users: []},{channelName: "game", users: []},{channelName: "job", users: []},{channelName: "campus", users: []}];
@@ -42,30 +43,34 @@ function channelExist (channel) {
     }
     return false;
 }
-function nicknameAddInChannel (nickname, channel) {
+function nicknameAddInChannel (nickname, channel, fromChannel) {
     "use strict";
     var nicknameInChannel;
     nicknameInChannel = "false";
     if (userExist(nickname) === true) {
-        if (channelExist(channel) === true) {
-            for (e = 0; e < arrayChanel.length; e = e + 1) {
-                if (arrayChanel[e].channelName === channel) {
-                    for (f = 0; f < arrayChanel[e].users.length; f = f + 1) {
-                        if (arrayChanel[e].users[f] === nickname) {
-                            nicknameInChannel = "true";
-                            break;
+        if (channelExist(fromChannel) === true) {
+            if (channelExist(channel) === true) {
+                for (e = 0; e < arrayChanel.length; e = e + 1) {
+                    if (arrayChanel[e].channelName === channel) {
+                        for (f = 0; f < arrayChanel[e].users.length; f = f + 1) {
+                            if (arrayChanel[e].users[f] === nickname) {
+                                nicknameInChannel = "true";
+                                break;
+                            }
+                        }
+                        if (nicknameInChannel === "true") {
+                            return {error: null, nickname: nickname, channel: channel, fromChannel: fromChannel};
+                        } else {
+                            arrayChanel[e].users.push(nickname);
+                            return {error: null, nickname: nickname, channel: channel, fromChannel: fromChannel};
                         }
                     }
-                    if (nicknameInChannel === "true") {
-                        return {error: null, nickname: nickname, channel: channel};
-                    } else {
-                        arrayChanel[e].users.push(nickname);
-                        return {error: null, nickname: nickname, channel: channel};
-                    }
                 }
+            } else {
+                return {error: 'channel not found !!', data: channel};
             }
         } else {
-            return {error: 'channel not found !!', data: channel, nickname: nickname};
+            return {error: 'from channel not found !!', data: channel};
         }
     } else {
         return {error: 'nickname not found !!', data: channel, nickname: nickname};
@@ -140,22 +145,52 @@ function leaveChannel (nickname, channelName) {
         return {error: "channel not found !!", data: null};
     }
 }
-function addChannel (nickname, channelName) {
+function addChannel (nickname, channelName, fromChannel) {
     "use strict"
     if (userExist(nickname) === true) {
-        if (channelExist(channelName) === false) {
-            arrayChanel.push({channelName: channelName, users: [nickname]});
-            return {error: null, data: {channelName: channelName, nickname: nickname}};
+        if (channelExist(fromChannel) === true) {
+            if (channelExist(channelName) === false) {
+                arrayChanel.push({channelName: channelName, users: [nickname]});
+                return {error: null, data: {channelName: channelName, nickname: nickname, fromChannel: fromChannel}};
+            } else {
+                return {error: "channel already exist !!", data: null};
+            }
         } else {
-            return {error: "channel already exist !!", data: null};
+            return {error: "you send from a channel not found !!", data: null};
         }
     } else {
         return {error: "nickname not found !!", data: null};
     }
 }
+function leaveIRC (nickname, channelName) {
+    "use strict";
+    var i, j, k;
+    if (userExist(nickname) === true) {
+        if (channelExist(channelName) === true) {
+            for (i = 0; i < arrayChanel.length; i = i + 1) {
+                for (j = 0; j < arrayChanel[i].users.length; j = j + 1) {
+                    if (arrayChanel[i].users[j] === nickname) {
+                        arrayChanel[i].users.splice(j, 1);
+                    }
+                }
+            }
+            for (k = 0; k < arrayUser.length; k = k + 1) {
+                if (arrayUser[k].nickname === nickname) {
+                    arrayUser.splice(k, 1);
+                }
+            }
+            return {error: null, data: {nickname: nickname, channelName: channelName}};
+        } else {
+            return {error: "channel not found", data: null};
+        }
+    } else {
+        return {error: "nickname not found", data: null};
+    }
+}
 io.on('connection', function (socket) {
     "use strict";
-    console.log('a user is connected');
+    visitorCount = visitorCount + 1;
+    console.log('someone come !! ' + visitorCount + ' visitor !!');
     for (c = 0; c < arrayChanel.length; c = c + 1) {
         channels.push(arrayChanel[c].channelName);
     }
@@ -236,7 +271,7 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('goInChannel', function (data) {
-        io.sockets.emit('goInChannel', nicknameAddInChannel(data.nickname, data.channel));
+        io.sockets.emit('goInChannel', nicknameAddInChannel(data.nickname, data.channel, data.fromChannel));
     });
     socket.on('change nickname', function (data) {
         reponse = "";
@@ -273,9 +308,13 @@ io.on('connection', function (socket) {
         }
     });
     socket.on('addChannel', function (data) {
-        io.sockets.emit('addChannel', addChannel(data.nickname, data.channelName));
+        io.sockets.emit('addChannel', addChannel(data.nickname, data.channelName, data.fromChannel));
+    });
+    socket.on('leaveIRC', function (data) {
+        io.sockets.emit('leaveIRC', leaveIRC(data.nickname, data.channelName));
     });
     socket.on('disconnect', function (){
-        console.log('a user is disconnected');
+        visitorCount = visitorCount - 1;
+        console.log('someone quit !! ' + visitorCount + ' visitor !!');
     });
 });
