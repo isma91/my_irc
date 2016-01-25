@@ -155,6 +155,77 @@ $(document).ready(function () {
       }
     });
   }
+  function sendMessage () {
+    "use strict";
+    keyboardShortcuts = false;
+    if ($.trim($('#message').val()).substr(0, 4) === "/msg") {
+      keyboardShortcuts = true;
+      if ($.trim($.trim($("#message").val()).substr(5)).split(':').length > 1) {
+        if ($.trim($.trim($("#message").val()).substr(5)).split(':')[1] !== "") {
+          arrayMsg = $.trim($.trim($("#message").val()).substr(5)).split(':');
+          to = arrayMsg[0].trim();
+          arrayMsg.splice(0, 1);
+          socket.emit('sendMessage', {nickname: $('#username').html(), to: to, channel: null, message: arrayMsg.join(" ")});
+          arrayMsg = [];
+          to = "";
+        } else {
+          Materialize.toast('<p class="alert-failed">You can\'t send empty message to ' + $.trim($.trim($("#message").val()).substr(5)).split(':')[0] + ' !!<p>', 2000, 'rounded alert-failed');
+          }
+        } else {
+          if ($.trim($.trim($("#message").val()).substr(5)).split(':')[0] !== "") {
+            socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: $.trim($.trim($("#message").val()).substr(5))});
+          } else {
+            Materialize.toast('<p class="alert-failed">You can\'t send empty message !!<p>', 2000, 'rounded alert-failed');
+          }
+        }
+      }
+      switch($.trim($("#message").val()).substr(0, 5)) {
+        case "/nick":
+        keyboardShortcuts = true;
+        if ($.trim($.trim($("#message").val()).substr(5)).length < 16) {
+          socket.emit('change nickname', {oldNickname : $('#username').html(), newNickname: $.trim($.trim($("#message").val()).substr(5))});
+        } else {
+          $("#allMessage_" + $('#channelName').html()).append('<div class="messageEvent">You can\'t change your nickname !! New nickname too long (max 15 charracters)</div><div class="mui-divider"></div>');
+          $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        }
+        break;
+        case "/list":
+        keyboardShortcuts = true;
+        socket.emit('listChannel', {channelName: $.trim($.trim($("#message").val()).substr(5))});
+        break;
+        case "/join":
+        keyboardShortcuts = true;
+        socket.emit('goInChannel', {nickname: $("#username").html(), channel: $.trim($.trim($("#message").val()).substr(5)), fromChannel: $('#channelName').html()});
+        break;
+        case "/part":
+        keyboardShortcuts = true;
+        socket.emit('leaveChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
+        break;
+      }
+      if ($.trim($("#message").val()).substr(0, 6) === "/users") {
+        keyboardShortcuts = true;
+        socket.emit('getUserCurrentChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
+      } else if ($.trim($("#message").val()).substr(0, 11) === "/addChannel") {
+        keyboardShortcuts = true;
+        if ($.trim($.trim($("#message").val()).substr(11)) === "") {
+          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">You can\'t add an empty channel !!</div><div class="mui-divider"></div>');
+          $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        } else {
+          socket.emit('addChannel', {nickname: $('#username').html(), channelName: $.trim($.trim($("#message").val()).substr(11)), fromChannel: $('#channelName').html()});
+        }
+      } else if ($.trim($("#message").val()).substr(0, 13) === "/allShortcuts") {
+        keyboardShortcuts = true;
+        socket.emit('allShortcuts', {nickname: $('#username').html(), trigger: "message"});
+      } else if (keyboardShortcuts === false) {
+        socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: $.trim($('#message').val())});
+      }
+      $("#message").val('');
+      $("#sendMessage").attr('disabled', "true");
+  }
   socket.on('list channel', function (data) {
     listChannel = '<h3 class="title">List of channels</h3><ul id="listChannel">';
     $.each(data.data, function (index, channel) {
@@ -209,6 +280,40 @@ $(document).ready(function () {
     if (data.error === null) {
       $("#username").html(data.data.nickname);
       $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
+      $('#theBody').html('<div class="row"><div class="mui-panel col s6" id="thePanel"></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"></ul></div></div><audio id="notification" preload="auto"><source src="sound/notification.ogg"></source>This browser does not support the HTML5 audio tag.</audio>');
+      $('#thePanel').append('<div class="allMessageChannelActive" id="allMessage_' + $('#channelName').html() + '"><div id="welcomeChannel">Welcome to the channel ' + data.data.channel + ' !!</div><div class="mui-divider"></div></div>');
+      $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channel + '">' + data.data.channel + '</button></li>');
+      $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+      $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+      $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+      $("#message").on('change paste keyup', function () {
+        if ($.trim($(this).val()) === "") {
+          $("#sendMessage").attr('disabled', "true");
+        } else {
+          $("#sendMessage").removeAttr('disabled');
+        }
+      });
+      $("#sendMessage").click(function () {
+        sendMessage();
+      });
+      notification = $('#notification')[0];
+      $('.dropdown-button').dropdown({
+        inDuration: 300,
+        outDuration: 225,
+        constrain_width: true,
+        hover: false,
+        gutter: 0,
+        belowOrigin: false,
+        alignment: 'left'
+        });
+      $('.modal-trigger').leanModal();
+      $('#gifName').on('change paste keyup',function () {
+        displayGifList('#gifName', '#gifList', 0);
+      });
+      $('.emoticons').click(function () {
+        emoticon = $(this).text();
+        $('#message').val($('#message').val() + emoticon);
+      });
       socket.emit('all channel');
       socket.emit('allShortcuts', {nickname: data.data.nickname, trigger: "connection"});
     } else {
@@ -243,7 +348,7 @@ $(document).ready(function () {
     if ($("#username").html() !== "") {
       Materialize.toast('<p class="alert-success">New user connected<p>', 1000, 'rounded alert-success');
       if (data.data.channel === $('#channelName').html()) {
-        $("#allMessage").append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>');
+        $("#allMessage_" + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>');
       }
       $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
       socket.emit('all channel');
@@ -252,7 +357,31 @@ $(document).ready(function () {
   socket.on('get channel', function (data) {
     if ($("#username").html() !== "") {
       $("#usernameChannelName").html('You are currently in the channel <span id="channelName">' + data.data.channelName + '</span>');
-      $("#theBody").html('<div class="row"><div class="mui-panel col s6" id="thePanel"><div id="allMessage"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"><li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li></ul></div></div><audio id="notification" preload="auto"><source src="sound/notification.ogg"></source>This browser does not support the HTML5 audio tag.</audio>');
+      if (checkDuplicateChannel(data.data.channelName) === false) {
+        $('#thePanel').children('div').removeClass('allMessageChannelActive');
+        $('#thePanel').children('div').removeClass('allMessageChannel');
+        $('#thePanel').children('div').addClass('allMessageChannel');
+        $('#thePanel').append('<div class="allMessageChannelActive" id="allMessage_' + $('#channelName').html() + '"><div id="welcomeChannel">Welcome to the channel ' + data.data.channelName + ' !!</div><div class="mui-divider"></div></div>');
+        $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li>');
+        $('#channelsButton').niceScroll({cursorwidth: '10px'});
+        $('#channelsButton').getNiceScroll().resize();
+        $('#channelsButton').animate({ scrollTop: 1000000 }, "slow");
+        $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+        $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+        $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        $('#allMessage_' + $('#channelName').html()).css('z-index', '999');
+      } else {
+        $('#thePanel').children('div').removeClass('allMessageChannelActive');
+        $('#thePanel').children('div').removeClass('allMessageChannel');
+        $('#thePanel').children('div').addClass('allMessageChannel');
+        $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannel');
+        $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannelActive');
+        $('#allMessage_' + $('#channelName').html()).addClass('allMessageChannelActive');
+        $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+        $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+        $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        $('#allMessage_' + $('#channelName').html()).css('z-index', '999');
+      }
       notification = $('#notification')[0];
       $('.dropdown-button').dropdown({
         inDuration: 300,
@@ -271,10 +400,6 @@ $(document).ready(function () {
         emoticon = $(this).text();
         $('#message').val($('#message').val() + emoticon);
       });
-      checkDuplicateChannel(data.data.channelName);
-      $("#allMessage").niceScroll({cursorwidth: '10px'});
-      $('#channelsButton').niceScroll({cursorwidth: '10px'});
-      $('textarea#message').characterCounter();
       $("#message").on('change paste keyup', function () {
         if ($.trim($(this).val()) === "") {
           $("#sendMessage").attr('disabled', "true");
@@ -283,68 +408,7 @@ $(document).ready(function () {
         }
       });
       $("#sendMessage").click(function () {
-        keyboardShortcuts = false;
-        if ($.trim($('#message').val()).substr(0, 4) === "/msg") {
-          keyboardShortcuts = true;
-          if ($.trim($.trim($("#message").val()).substr(5)).split(':').length > 1) {
-            if ($.trim($.trim($("#message").val()).substr(5)).split(':')[1] !== "") {
-              arrayMsg = $.trim($.trim($("#message").val()).substr(5)).split(':');
-              to = arrayMsg[0].trim();
-              arrayMsg.splice(0, 1);
-              socket.emit('sendMessage', {nickname: $('#username').html(), to: to, channel: null, message: arrayMsg.join(" ")});
-              arrayMsg = [];
-              to = "";
-            } else {
-              Materialize.toast('<p class="alert-failed">You can\'t send empty message to ' + $.trim($.trim($("#message").val()).substr(5)).split(':')[0] + ' !!<p>', 2000, 'rounded alert-failed');
-            }
-          } else {
-            if ($.trim($.trim($("#message").val()).substr(5)).split(':')[0] !== "") {
-              socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: $.trim($.trim($("#message").val()).substr(5))});
-            } else {
-              Materialize.toast('<p class="alert-failed">You can\'t send empty message !!<p>', 2000, 'rounded alert-failed');
-            }
-          }
-        }
-        switch($.trim($("#message").val()).substr(0, 5)) {
-          case "/nick":
-          keyboardShortcuts = true;
-          if ($.trim($.trim($("#message").val()).substr(5)).length < 16) {
-            socket.emit('change nickname', {oldNickname : $('#username').html(), newNickname: $.trim($.trim($("#message").val()).substr(5))});
-          } else {
-            $("#allMessage").append('<div class="messageEvent">You can\'t change your nickname !! New nickname too long (max 15 charracters)</div><div class="mui-divider"></div>');
-          }
-          break;
-          case "/list":
-          keyboardShortcuts = true;
-          socket.emit('listChannel', {channelName: $.trim($.trim($("#message").val()).substr(5))});
-          break;
-          case "/join":
-          keyboardShortcuts = true;
-          socket.emit('goInChannel', {nickname: $("#username").html(), channel: $.trim($.trim($("#message").val()).substr(5)), fromChannel: $('#channelName').html()});
-          break;
-          case "/part":
-          keyboardShortcuts = true;
-          socket.emit('leaveChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
-          break;
-        }
-        if ($.trim($("#message").val()).substr(0, 6) === "/users") {
-          keyboardShortcuts = true;
-          socket.emit('getUserCurrentChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
-        } else if ($.trim($("#message").val()).substr(0, 11) === "/addChannel") {
-          keyboardShortcuts = true;
-          if ($.trim($.trim($("#message").val()).substr(11)) === "") {
-            $('#allMessage').append('<div class="messageEvent">You can\'t add an empty channel !!</div><div class="mui-divider"></div>');
-          } else {
-            socket.emit('addChannel', {nickname: $('#username').html(), channelName: $.trim($.trim($("#message").val()).substr(11)), fromChannel: $('#channelName').html()});
-          }
-        } else if ($.trim($("#message").val()).substr(0, 13) === "/allShortcuts") {
-          keyboardShortcuts = true;
-          socket.emit('allShortcuts', {nickname: $('#username').html(), trigger: "message"});
-        } else if (keyboardShortcuts === false) {
-          socket.emit('sendMessage', {nickname: $('#username').html(), to: null, channel: $('#channelName').html(), message: $.trim($('#message').val())});
-        }
-        $("#message").val('');
-        $("#sendMessage").attr('disabled', "true");
+        sendMessage();
       });
     }
   });
@@ -366,33 +430,85 @@ $(document).ready(function () {
           notification.play();
         }
       } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
-        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage", "#allMessage");
+        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + $('#channelName').html(), "#allMessage_" + $('#channelName').html());
         if ($('#notifButton').attr('active') === "yes") {
           notification.play();
+        }
+      } else {
+        for (k = 0; k < listChannelsButton.length; k = k + 1) {
+          if (listChannelsButton[k].channelName === data.data.channel) {
+            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + data.data.channel, "#allMessage_" + data.data.channel);
+            break;
+          }
         }
       }
     }
   });
   socket.on('allShortcuts', function (data) {
-    displayShortcut(arrayKeyboardShortcuts,  data.trigger, data.data, "#allMessage", "#allMessage");
+    displayShortcut(arrayKeyboardShortcuts,  data.trigger, data.data, "#allMessage_" + $('#channelName').html(), "#allMessage_" + $('#channelName').html());
   });
   socket.on('goInChannel', function (data) {
     if ($('#username').html() !== "") {
       if (data.error === null) {
         if (data.nickname === $('#username').html()) {
           $('#channelName').html(data.channel);
-          $('#allMessage').html('<div id="welcomeChannel">Welcome to the channel ' + data.channel + ' !!</div><div class="mui-divider"></div>');
           if (checkDuplicateChannel(data.channel) === false) {
+            $('#thePanel').children('div').removeClass('allMessageChannelActive');
+            $('#thePanel').children('div').removeClass('allMessageChannel');
+            $('#thePanel').children('div').addClass('allMessageChannel');
+            $('#thePanel').append('<div class="allMessageChannelActive" id="allMessage_' + $('#channelName').html() + '"><div id="welcomeChannel">Welcome to the channel ' + data.channel + ' !!</div><div class="mui-divider"></div></div>');
             $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.channel + '">' + data.channel + '</button></li>');
             $('#channelsButton').niceScroll({cursorwidth: '10px'});
             $('#channelsButton').getNiceScroll().resize();
             $('#channelsButton').animate({ scrollTop: 1000000 }, "slow");
+            $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannel');
+            $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannelActive');
+            $('#allMessage_' + $('#channelName').html()).addClass('allMessageChannelActive');
+            $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+            $('#allMessage_' + $('#channelName').html()).css('z-index', '999');
+          } else {
+            $('#thePanel').children('div').removeClass('allMessageChannelActive');
+            $('#thePanel').children('div').removeClass('allMessageChannel');
+            $('#thePanel').children('div').addClass('allMessageChannel');
+            $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannel');
+            $('#allMessage_' + $('#channelName').html()).removeClass('allMessageChannelActive');
+            $('#allMessage_' + $('#channelName').html()).addClass('allMessageChannelActive');
+            $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+            $('#allMessage_' + $('#channelName').html()).css('z-index', '999');
           }
+          notification = $('#notification')[0];
+          $('.dropdown-button').dropdown({
+            inDuration: 300,
+            outDuration: 225,
+            constrain_width: true,
+            hover: false,
+            gutter: 0,
+            belowOrigin: false,
+            alignment: 'left'
+            });
+          $('.modal-trigger').leanModal();
+          $('#gifName').on('change paste keyup',function () {
+            displayGifList('#gifName', '#gifList', 0);
+          });
+          $('.emoticons').click(function () {
+            emoticon = $(this).text();
+            $('#message').val($('#message').val() + emoticon);
+          });
         } else {
           if (data.channel === $('#channelName').html()) {
-            $("#allMessage").append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>');
+            $("#allMessage_" + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> is connected to this channel</div><div class="mui-divider"></div>');
+            $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
           } else if (data.fromChannel === $('#channelName').html()) {
-            $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> go to another channel !!</div><div class="mui-divider"></div>');
+            $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.nickname + '</span> go to another channel !!</div><div class="mui-divider"></div>');
+            $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
           }
         }
         $('.channelButton').click(function () {
@@ -401,7 +517,10 @@ $(document).ready(function () {
         socket.emit("all channel");
       } else {
         if (data.nickname === $('#username').html()) {
-          $('#allMessage').append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
+          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
+          $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
         }
       }
     }
@@ -411,19 +530,19 @@ $(document).ready(function () {
       if (data.error === null) {
         if (data.data.oldNickname === $('#username').html()) {
           $('#username').html(data.data.newNickname);
-          $('#allMessage').append('<div class="messageEvent">You change your nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
-          $('#allMessage').niceScroll({cursorwidth: '10px'});
-          $('#allMessage').getNiceScroll().resize();
-          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">You change your nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
+          $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
         } else {
           $.each(data.data.allChannel, function (index, channel) {
             if (channel.channelName === $('#channelName').html()) {
               $.each(channel.users, function (num, user) {
                 if (user === data.data.newNickname) {
-                  $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
-                  $('#allMessage').niceScroll({cursorwidth: '10px'});
-                  $('#allMessage').getNiceScroll().resize();
-                  $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+                  $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
+                  $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+                  $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+                  $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
                   return;//break fait planter jquery car illegal statement dans un $.each();
                 }
               });
@@ -443,17 +562,17 @@ $(document).ready(function () {
           listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
         });
         listChannels = listChannels + '</div><div class="mui-divider"></div>';
-        $('#allMessage').append(listChannels);
+        $('#allMessage_' + $('#channelName').html()).append(listChannels);
         listChannels = '';
-        $('#allMessage').niceScroll({cursorwidth: '10px'});
-        $('#allMessage').getNiceScroll().resize();
-        $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+        $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+        $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+        $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
       } else {
         if (data.data.listChannel.length === 0) {
-          $('#allMessage').append('<div class="messageEvent">No channel found with <span class="usernameEvent">' + data.data.channelName + '</span> :(</div><div class="mui-divider"></div>');
-          $('#allMessage').niceScroll({cursorwidth: '10px'});
-          $('#allMessage').getNiceScroll().resize();
-          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">No channel found with <span class="usernameEvent">' + data.data.channelName + '</span> :(</div><div class="mui-divider"></div>');
+          $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
         } else {
           listChannels = '';
           listChannels = '<div class="messageEvent">Here are the channels that contain <span class="usernameEvent">' + data.data.channelName + '</span> :<br>';
@@ -461,11 +580,11 @@ $(document).ready(function () {
             listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
           });
           listChannels = listChannels + '</div><div class="mui-divider"></div>';
-          $('#allMessage').append(listChannels);
+          $('#allMessage_' + $('#channelName').html()).append(listChannels);
           listChannels = '';
-          $('#allMessage').niceScroll({cursorwidth: '10px'});
-          $('#allMessage').getNiceScroll().resize();
-          $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+          $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
         }
       }
     }
@@ -479,11 +598,11 @@ $(document).ready(function () {
           listUserCurrentChannel = listUserCurrentChannel + '<span class="usernameEvent">' + nickname + '</span><br>';
         });
         listUserCurrentChannel = listUserCurrentChannel + '</div><div class="mui-divider"></div>';
-        $('#allMessage').append(listUserCurrentChannel);
+        $('#allMessage_' + $('#channelName').html()).append(listUserCurrentChannel);
         listUserCurrentChannel = '';
-        $('#allMessage').niceScroll({cursorwidth: '10px'});
-        $('#allMessage').getNiceScroll().resize();
-        $('#allMessage').animate({ scrollTop: 1000000 }, "slow");
+        $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+        $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+        $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
       }
     }
   });
@@ -497,12 +616,18 @@ $(document).ready(function () {
               $("#channelName").html($('.channelButton')[$('.channelButton').length - 1].innerHTML);
             } else {
               $('#channelName').html('');
-              $('#allMessage').append('<div class="messageEvent">ou are in any channel now, you can\'t send message to all user and can\'t leave a channel until you join another channel</div><div class="mui-divider"></div>');
+              $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">You are in any channel now, you can\'t send message to all user and can\'t leave a channel until you join another channel</div><div class="mui-divider"></div>');
+              $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+              $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+              $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
             }
           }
         } else {
           if (data.data.channel === $('#channelName').html()) {
-            $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> left the channel</div><div class="mui-divider"></div>');
+            $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> left the channel</div><div class="mui-divider"></div>');
+            $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
           }
         }
         socket.emit('all channel');
@@ -515,8 +640,15 @@ $(document).ready(function () {
         socket.emit('all channel');
         if (data.data.nickname === $('#username').html()) {
           socket.emit('goInChannel', {nickname: $("#username").html(), channel: data.data.channelName, fromChannel: $('#channelName').html()});
+          $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channelName + '">' + data.data.channelName + '</button></li>');
+          $('#channelsButton').niceScroll({cursorwidth: '10px'});
+          $('#channelsButton').getNiceScroll().resize();
+          $('#channelsButton').animate({ scrollTop: 1000000 }, "slow");
         } else if (data.data.fromChannel === $('#channelName').html()) {
-          $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> create the channel <span class="usernameEvent">' + data.data.channelName + '</span></div><div class="mui-divider"></div>');
+          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> create the channel <span class="usernameEvent">' + data.data.channelName + '</span></div><div class="mui-divider"></div>');
+          $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
         }
       }
     }
@@ -535,7 +667,10 @@ $(document).ready(function () {
       $('#numUsers').html(userNum);
       socket.emit('all channel');
       if ($('#channelName').html() === data.data.channelName) {
-        $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> quit the IRC !!</div><div class="mui-divider"></div>');
+        $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> quit the IRC !!</div><div class="mui-divider"></div>');
+        $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+        $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
+        $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
       }
     }
   });
