@@ -10,6 +10,15 @@ Of course this project use many packages :
 - [forever](https://www.npmjs.com/package/forever)  
 
 
+And use some other packages like :  
+
+- [Materialize](http://materializecss.com/)
+- [Mui css](https://www.muicss.com/)
+- [Google icon material](https://design.google.com/icons/)
+- [NiceScroll](http://areaaperta.com/nicescroll/)
+- [NouiSlider](http://refreshless.com/nouislider/)
+
+
 To use it, just launch it with :  
 
 ```node /path/to/project/media/js/server.js```  
