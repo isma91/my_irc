@@ -187,3 +187,12 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	max-width: 100%;
 	cursor: pointer;
 }
+.allMessageChannel {
+	display: none;
+	visibility: hidden;
+}
+.allMessageChannelActive {
+	display: inherit;
+	visibility: inherit;
+	z-index: 999;
+}
