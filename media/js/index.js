@@ -2,7 +2,7 @@
 /*jslint devel : true*/
 /*global $, document, this, Materialize*/
 $(document).ready(function () {
-  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i, listChannels, j, arrayMsg, to, emoticon, gifSearch, notification;
+  var socket, channels, listChannel, keyboardShortcuts, arrayKeyboardShortcuts, countMessage, listChannelsButton, i, listChannels, j, arrayMsg, to, emoticon, gifSearch, notification, userNum;
   to = "";
   arrayMsg = [];
   countMessage = 0;
@@ -531,6 +531,8 @@ $(document).ready(function () {
   });
   socket.on('leaveIRC', function (data) {
     if ($('#username').html() !== "") {
+      userNum = $('#numUsers').html() - 1;
+      $('#numUsers').html(userNum);
       socket.emit('all channel');
       if ($('#channelName').html() === data.data.channelName) {
         $('#allMessage').append('<div class="messageEvent"><span class="usernameEvent">' + data.data.nickname + '</span> quit the IRC !!</div><div class="mui-divider"></div>');
