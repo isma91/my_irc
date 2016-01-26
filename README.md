@@ -1,5 +1,5 @@
 # my_irc
-##A IRC server with nodeJS
+##A IRC server-client with nodeJS
 This project use [nodeJS](https://nodejs.org/en/) and [npm](https://www.npmjs.com/)
 
 
