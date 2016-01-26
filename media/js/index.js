@@ -51,6 +51,7 @@ $(document).ready(function () {
     message = message.replace(/:gif:/g, '<img src="img/gif.png" alt="gif" />');
     if (countMessage >= 50) {
       $(selectorDisplayMessage).html('');
+      countMessage = 0;
     }
     if (to !== null) {
       toNickname = '[to <span class="usernameEvent">' + to + '</span>]';
@@ -68,6 +69,7 @@ $(document).ready(function () {
     var shortcuts;
     if (countMessage >= 50) {
       $(selectorDisplayMessage).html('');
+      countMessage = 0;
     }
     shortcuts = '';
     array = [];
@@ -265,6 +267,32 @@ $(document).ready(function () {
       $("#userMood").html('<i class="medium material-icons">mood</i>');
     }
   });
+  $('#nickname').keydown(function () {
+    if (event.keyCode == 13) {
+      if ($.trim($(this).val()) !== "") {
+        if ($.trim($('#nickname').val()).match(/ /i) === null && $.trim($('#nickname').val()).match(/:/i) === null) {
+          socket.emit('user connection', {nickname: $.trim($('#nickname').val()), channel: $("#channel").val(), remember: $('#remember').is(':checked')});
+          $('#nickname').val('');
+          $('#channel').val('');
+        } else {
+          Materialize.toast('<p class="alert-failed">You can\'t have space or : in your nickname !!<p>', 2000, 'rounded alert-failed');
+        }
+      }
+    }
+  });
+  $('#channel').keydown(function () {
+    if (event.keyCode == 13) {
+      if ($.trim($('#nickname').val()) !== "") {
+        if ($.trim($('#nickname').val()).match(/ /i) === null && $.trim($('#nickname').val()).match(/:/i) === null) {
+          socket.emit('user connection', {nickname: $.trim($('#nickname').val()), channel: $("#channel").val(), remember: $('#remember').is(':checked')});
+          $('#nickname').val('');
+          $('#channel').val('');
+        } else {
+          Materialize.toast('<p class="alert-failed">You can\'t have space or : in your nickname !!<p>', 2000, 'rounded alert-failed');
+        }
+      }
+    }
+  });
   $('#connection').click(function () {
     if ($.trim($('#nickname').val()) !== "") {
       if ($.trim($('#nickname').val()).match(/ /i) === null && $.trim($('#nickname').val()).match(/:/i) === null) {
@@ -280,7 +308,7 @@ $(document).ready(function () {
     if (data.error === null) {
       $("#username").html(data.data.nickname);
       $('#countUser').html('There are <span id="numUsers">' + data.data.userLength + '</span> users in the entire irc');
-      $('#theBody').html('<div class="row"><div class="mui-panel col s6" id="thePanel"></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><textarea name="message" id="message" maxlength="140" length="140" class="materialize-textarea"></textarea><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"></ul></div></div><audio id="notification" preload="auto"><source src="sound/notification.ogg"></source>This browser does not support the HTML5 audio tag.</audio>');
+      $('#theBody').html('<div class="row"><div class="mui-panel col s6" id="thePanel"></div><div class="mui-panel col s6" id="thePersonnalPanel"><div id="allPersonnalMessage"><div id="personnalWelcome">Welcome to your personnal chatting room !! Click on the channel\'s name to display all the users who are in this channel ans click on one of them to chat personally with him !!</div><div class="mui-divider"></div></div></div></div><div class="row"><div class="mui-panel"><div class="input-field col s12"><i class="material-icons prefix">chat</i><input type="text" name="message" id="message" maxlength="140" length="140"><label for="message">Message</label><button class="btn waves-effect waves-light btn-flat" id="sendMessage" disabled="true">Send<i class="material-icons right">send</i></button></div><a class="waves-effect waves-light btn modal-trigger" href="#listGif" id="gifButton"><i class="material-icons">gif</i> by Giphy</a><a class="dropdown-button btn smileyButton" data-beloworigin="true" href="#" data-activates="smiley">Add Smiley</a><ul id="smiley" class="dropdown-content"><li id="emoticon" class="emoticons"><a href="#"><img src="img/emoticon.png" alt="emoticon" />:emoticon:</a></li><li id="emoticon-cool" class="emoticons"><a href="#"><img src="img/emoticon-cool.png" alt="emoticon-cool" />:emoticon-cool:</a></li><li id="emoticon-devil" class="emoticons"><a href="#"><img src="img/emoticon-devil.png" alt="emoticon-devil" />:emoticon-devil:</a></li><li id="emoticon-happy" class="emoticons"><a href="#"><img src="img/emoticon-happy.png" alt="emoticon-happy" />:emoticon-happy:</a></li><li id="emoticon-neutral" class="emoticons"><a href="#"><img src="img/emoticon-neutral.png" alt="emoticon-neutral" />:emoticon-neutral:</a></li><li id="emoticon-poop" class="emoticons"><a href="#"><img src="img/emoticon-poop.png" alt="emoticon-poop" />:emoticon-poop:</a></li><li id="emoticon-sad" class="emoticons"><a href="#"><img src="img/emoticon-sad.png" alt="emoticon-sad" />:emoticon-sad:</a></li><li id="emoticon-tongue" class="emoticons"><a href="#"><img src="img/emoticon-tongue.png" alt="emoticon-tongue" />:emoticon-tongue:</a></li></ul><div id="listGif" class="modal bottom-sheet"><div class="modal-content"><h4>Type a text and Giphy will find a gif version of that !!</h4><h5>Click on the image to send to the channel or as a personal message</h5><p><img src="img/giphy.png" alt="powered by giphy" /></p><div class="row"><div class="input-field col s12"><i class="material-icons prefix">gif</i><input id="gifName" type="text"><label for="gifName">Gif Name</label></div></div><div id="gifList"></div></div></div></div></div><div id="sendGif"></div><div class="row"><div class=" mui-panel col s12"><h4>List of channel where you are joined</h4><h5>Click one of them to chat in this channel</h5><ul id="channelsButton"></ul></div></div><audio id="notification" preload="auto"><source src="sound/notification.ogg"></source>This browser does not support the HTML5 audio tag.</audio>');
       $('#thePanel').append('<div class="allMessageChannelActive" id="allMessage_' + $('#channelName').html() + '"><div id="welcomeChannel">Welcome to the channel ' + data.data.channel + ' !!</div><div class="mui-divider"></div></div>');
       $('#channelsButton').append('<li><button class="mui-btn mui-btn--raised channelButton channelButton_' + data.data.channel + '">' + data.data.channel + '</button></li>');
       $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
@@ -291,6 +319,13 @@ $(document).ready(function () {
           $("#sendMessage").attr('disabled', "true");
         } else {
           $("#sendMessage").removeAttr('disabled');
+        }
+      });
+      $('#message').keydown(function () {
+        if (event.keyCode == 13) {
+          if ($.trim($(this).val()) !== "") {
+            sendMessage();
+          }
         }
       });
       $("#sendMessage").click(function () {
@@ -414,31 +449,35 @@ $(document).ready(function () {
   });
   socket.on('receiveMessage', function (data) {
     if ($("#username").html() !== "") {
-      if (data.data.to === $('#username').html()) {
-        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        if ($('#notifButton').attr('active') === "yes") {
-          notification.play();
-        }
-      } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
-        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        if ($('#notifButton').attr('active') === "yes") {
-          notification.play();
-        }
-      } else if (data.data.nickname === $('#username').html() && data.data.to !== null) {
-        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
-        if ($('#notifButton').attr('active') === "yes") {
-          notification.play();
-        }
-      } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
-        displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + $('#channelName').html(), "#allMessage_" + $('#channelName').html());
-        if ($('#notifButton').attr('active') === "yes") {
-          notification.play();
-        }
-      } else {
-        for (k = 0; k < listChannelsButton.length; k = k + 1) {
-          if (listChannelsButton[k].channelName === data.data.channel) {
-            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + data.data.channel, "#allMessage_" + data.data.channel);
-            break;
+      if (data.error === null) {
+        if (data.data.userCheckLeave === false) {
+          if (data.data.to === $('#username').html()) {
+            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+            if ($('#notifButton').attr('active') === "yes") {
+              notification.play();
+            }
+          } else if ($('#channelName').html() === data.data.channel && data.data.to === $("#username").html()) {
+            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+            if ($('#notifButton').attr('active') === "yes") {
+              notification.play();
+            }
+          } else if (data.data.nickname === $('#username').html() && data.data.to !== null) {
+            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allPersonnalMessage", "#allPersonnalMessage");
+            if ($('#notifButton').attr('active') === "yes") {
+              notification.play();
+            }
+          } else if ($('#channelName').html() === data.data.channel && data.data.to === null) {
+            displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + $('#channelName').html(), "#allMessage_" + $('#channelName').html());
+            if ($('#notifButton').attr('active') === "yes") {
+              notification.play();
+            }
+          } else {
+            for (k = 0; k < listChannelsButton.length; k = k + 1) {
+              if (listChannelsButton[k].channelName === data.data.channel) {
+                displayMessage(data.data.nickname, data.data.message, data.data.to, "#allMessage_" + data.data.channel, "#allMessage_" + data.data.channel);
+                break;
+              }
+            }
           }
         }
       }
@@ -516,11 +555,20 @@ $(document).ready(function () {
         });
         socket.emit("all channel");
       } else {
-        if (data.nickname === $('#username').html()) {
-          $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
-          $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
-          $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
-          $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        if (data.error === "channel not found !!") {
+          if (data.data.nickname === $('#username').html()) {
+            if ($('#channelName').html() !== "") {
+              $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data.channel + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
+              $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+              $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+              $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+            } else {
+              $('.allMessageChannelActive').append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data.channel + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
+              $('.allMessageChannelActive').niceScroll({cursorwidth: '10px'});
+              $('.allMessageChannelActive').getNiceScroll().resize();
+              $('.allMessageChannelActive').animate({ scrollTop: 1000000 }, "slow");
+            }
+          }
         }
       }
     }
@@ -539,10 +587,17 @@ $(document).ready(function () {
             if (channel.channelName === $('#channelName').html()) {
               $.each(channel.users, function (num, user) {
                 if (user === data.data.newNickname) {
-                  $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
-                  $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
-                  $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
-                  $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+                  if ($('#channelName').html() !== "") {
+                    $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent"><span class="usernameEvent">' + data.data.oldNickname + '</span> change his nickname to <span class="usernameEvent">' + data.data.newNickname + '</span></div><div class="mui-divider"></div>');
+                    $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+                    $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+                    $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+                  } else {
+                    $('.allMessageChannelActive').append('<div class="messageEvent">The channel <span class="usernameEvent">' + data.data.channel + '</span> wasn\'t found !!</div><div class="mui-divider"></div>');
+                    $('.allMessageChannelActive').niceScroll({cursorwidth: '10px'});
+                    $('.allMessageChannelActive').getNiceScroll().resize();
+                    $('.allMessageChannelActive').animate({ scrollTop: 1000000 }, "slow");
+                  }
                   return;//break fait planter jquery car illegal statement dans un $.each();
                 }
               });
@@ -562,11 +617,18 @@ $(document).ready(function () {
           listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
         });
         listChannels = listChannels + '</div><div class="mui-divider"></div>';
-        $('#allMessage_' + $('#channelName').html()).append(listChannels);
+        if ($('#channelName').html() !== "") {
+          $('#allMessage_' + $('#channelName').html()).append(listChannels);
+          $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+          $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+          $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+        } else {
+          $('.allMessageChannelActive').append(listChannels);
+          $('.allMessageChannelActive').niceScroll({cursorwidth: '10px'});
+          $('.allMessageChannelActive').getNiceScroll().resize();
+          $('.allMessageChannelActive').animate({ scrollTop: 1000000 }, "slow");
+        }
         listChannels = '';
-        $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
-        $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
-        $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
       } else {
         if (data.data.listChannel.length === 0) {
           $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">No channel found with <span class="usernameEvent">' + data.data.channelName + '</span> :(</div><div class="mui-divider"></div>');
@@ -580,11 +642,18 @@ $(document).ready(function () {
             listChannels = listChannels + '<span class="usernameEvent">' + channel + '</span><br>';
           });
           listChannels = listChannels + '</div><div class="mui-divider"></div>';
-          $('#allMessage_' + $('#channelName').html()).append(listChannels);
           listChannels = '';
-          $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
-          $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
-          $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+          if ($('#channelName').html() !== "") {
+            $('#allMessage_' + $('#channelName').html()).append(listChannels);
+            $('#allMessage_' + $('#channelName').html()).niceScroll({cursorwidth: '10px'});
+            $('#allMessage_' + $('#channelName').html()).getNiceScroll().resize();
+            $('#allMessage_' + $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+          } else {
+            $('.allMessageChannelActive').append(listChannels);
+            $('.allMessageChannelActive').niceScroll({cursorwidth: '10px'});
+            $('.allMessageChannelActive').getNiceScroll().resize();
+            $('.allMessageChannelActive').animate({ scrollTop: 1000000 }, "slow");
+          }
         }
       }
     }
@@ -615,11 +684,12 @@ $(document).ready(function () {
             if ($('.channelButton').length > 0) {
               $("#channelName").html($('.channelButton')[$('.channelButton').length - 1].innerHTML);
             } else {
-              $('#channelName').html('');
-              $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">You are in any channel now, you can\'t send message to all user and can\'t leave a channel until you join another channel</div><div class="mui-divider"></div>');
+              $('#allMessage_' + $('#channelName').html()).append('<div class="messageEvent">You are in any channel now, you can\'t send message to user, leave a channel and list all users until you join another channel</div><div class="mui-divider"></div>');
               $('#allMessage_' +  $('#channelName').html()).niceScroll({cursorwidth: '10px'});
               $('#allMessage_' +  $('#channelName').html()).getNiceScroll().resize();
               $('#allMessage_' +  $('#channelName').html()).animate({ scrollTop: 1000000 }, "slow");
+              $('#channelName').html('');
+              $('#sendMessage').attr('disabled', 'true');
             }
           }
         } else {
