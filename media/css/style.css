@@ -141,6 +141,19 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	min-height: 15vh;
 	max-height: 15vh;
 }
+.allMessageChannel {
+	min-height: 45vh;
+	max-height: 45vh;
+	display: none;
+	visibility: hidden;
+}
+.allMessageChannelActive {
+	min-height: 45vh;
+	max-height: 45vh;
+	display: inherit;
+	visibility: inherit;
+	z-index: 999;
+}
 #senders {
 	float: left;
 	bottom: 0;
@@ -186,13 +199,4 @@ textarea.materialize-textarea:focus:not([readonly]) + label {
 	min-width: 100%;
 	max-width: 100%;
 	cursor: pointer;
-}
-.allMessageChannel {
-	display: none;
-	visibility: hidden;
-}
-.allMessageChannelActive {
-	display: inherit;
-	visibility: inherit;
-	z-index: 999;
 }
