@@ -43,12 +43,25 @@ function channelExist (channel) {
     }
     return false;
 }
+function userCheckLeave (nickname) {
+	"use strict";
+	var i,j;
+	for (i = 0; i < arrayChanel.length; i = i + 1) {
+		for (j = 0; j < arrayChanel[i].users.length; j = j + 1) {
+			if (arrayChanel[i].users[j] === nickname) {
+				return false;
+				break;
+			}
+		}
+	}
+	return true;
+}
 function nicknameAddInChannel (nickname, channel, fromChannel) {
     "use strict";
     var nicknameInChannel;
     nicknameInChannel = "false";
     if (userExist(nickname) === true) {
-        if (channelExist(fromChannel) === true) {
+        if (channelExist(fromChannel) === true || fromChannel === "") {
             if (channelExist(channel) === true) {
                 for (e = 0; e < arrayChanel.length; e = e + 1) {
                     if (arrayChanel[e].channelName === channel) {
@@ -67,13 +80,13 @@ function nicknameAddInChannel (nickname, channel, fromChannel) {
                     }
                 }
             } else {
-                return {error: 'channel not found !!', data: channel};
+                return {error: 'channel not found !!', data: {channel: channel, nickname: nickname}};
             }
         } else {
-            return {error: 'from channel not found !!', data: channel};
+            return {error: 'from channel not found !!', data: null};
         }
     } else {
-        return {error: 'nickname not found !!', data: channel, nickname: nickname};
+        return {error: 'nickname not found !!', data: null};
     }
 }
 function changeNickname (oldNickname, newNickname) {
@@ -231,7 +244,7 @@ io.on('connection', function (socket) {
         if (userDuplicate === true) {
             reponse = {error: "nickname already taken", data: null};
         } else if (channelMatch === true) {
-            arrayUser.push({nickname: dataUserConnection.nickname, remember: dataUserConnection.remember, channel: dataUserConnection.channel});
+            arrayUser.push({nickname: dataUserConnection.nickname, userCheckLeave: userCheckLeave(dataUserConnection.nickname), channel: dataUserConnection.channel});
             for (k = 0; k < arrayChanel.length; k = k + 1) {
                 if (arrayChanel[k].channelName === dataUserConnection.channel) {
                     arrayChanel[k].users.push(dataUserConnection.nickname);
@@ -260,9 +273,9 @@ io.on('connection', function (socket) {
     socket.on('sendMessage', function (data) {
         if (userExist(data.nickname) === true) {
             if (channelExist(data.channel) === true) {
-                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message}})
+                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message, userCheckLeave: userCheckLeave(data.nickname)}})
             } else if (data.channel === null) {
-                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message}})
+                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message, userCheckLeave: userCheckLeave(data.nickname)}})
             } else{
                 socket.emit('receiveMessage', {error: 'channel not found !!', data: null});
             }
