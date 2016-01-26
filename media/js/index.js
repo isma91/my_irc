@@ -205,6 +205,10 @@ $(document).ready(function () {
         keyboardShortcuts = true;
         socket.emit('leaveChannel', {nickname: $('#username').html(), channel: $('#channelName').html()});
         break;
+        case "/help":
+        keyboardShortcuts = true;
+        socket.emit('allShortcuts', {nickname: $('#username').html(), trigger: "message"});
+        break;
       }
       if ($.trim($("#message").val()).substr(0, 6) === "/users") {
         keyboardShortcuts = true;
