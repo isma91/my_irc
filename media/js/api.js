@@ -275,7 +275,11 @@ io.on('connection', function (socket) {
             if (channelExist(data.channel) === true) {
                 io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message, userCheckLeave: userCheckLeave(data.nickname)}})
             } else if (data.channel === null) {
-                io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message, userCheckLeave: userCheckLeave(data.nickname)}})
+            	if (userExist(data.to) === true) {
+                	io.sockets.emit('receiveMessage', {error: null, data: {nickname: data.nickname, to: data.to, channel: data.channel, message: data.message, userCheckLeave: userCheckLeave(data.nickname)}})
+            	} else {
+            		socket.emit('receiveMessage', {error: 'nickname not found !!', data: null});
+            	}
             } else{
                 socket.emit('receiveMessage', {error: 'channel not found !!', data: null});
             }
