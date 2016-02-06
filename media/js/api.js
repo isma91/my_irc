@@ -339,6 +339,6 @@ io.on('connection', function (socket) {
     });
     socket.on('disconnect', function (){
         visitorCount = visitorCount - 1;
-        console.log('someone quit !! ' + visitorCount + ' visitor !!');
+        console.log('someone leave !! ' + visitorCount + ' visitor !!');
     });
 });
