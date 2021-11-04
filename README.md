@@ -21,12 +21,12 @@ And use some other packages like :
 
 To use it, just launch it with :  
 
-```node /path/to/project/media/js/server.js```  
+```node /path/to/project/media/js/api.js```  
 
 Or, if you have the nodejs legacy package  
 
 
-```nodejs /path/to/project/media/js/server.js```  
+```nodejs /path/to/project/media/js/api.js```  
 
 
 After that you can go to your favorite web navigator and write :  
